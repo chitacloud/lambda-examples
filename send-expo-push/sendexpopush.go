@@ -146,7 +146,7 @@ func SendExpoPush(req Request) (Response, error) {
 		if message == "" {
 			message = fmt.Sprintf("expo push returned status %s", status)
 		}
-		return res, fmt.Errorf(message)
+		return res, fmt.Errorf("%s", message)
 	}
 	return res, nil
 }
