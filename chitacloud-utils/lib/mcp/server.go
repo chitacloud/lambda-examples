@@ -72,6 +72,25 @@ func (s *Server) Handle(w http.ResponseWriter, r *http.Request, req MCPRequest) 
 			responseData, err = tool.Handler(req.Params.Arguments)
 			if err != nil {
 				fmt.Printf("Error calling tool %s: %s\n", toolName, err.Error())
+			} else {
+
+				// According to JSON-RPC 2.0, we should use 'result' to contain the response content
+
+				unstructuredBytes, err := json.Marshal(responseData)
+				if err != nil {
+					return nil, err
+				}
+
+				responseData = map[string]any{
+					"content": []map[string]any{
+						{
+							"type": "text",
+							"text": string(unstructuredBytes),
+						},
+					},
+					"structuredContent": responseData,
+				}
+
 			}
 		} else {
 			fmt.Printf("Tool %s not found\n", toolName)
