@@ -3,13 +3,19 @@ package mcp
 
 import "github.com/fredyk/westack-go/v2/lambdas"
 
+type MCPRequestParams struct {
+	Name      string         `json:"name"`
+	Arguments map[string]any `json:"arguments"`
+	Meta      map[string]any `json:"_meta"`
+}
+
 // MCPRequest represents a standard MCP protocol request
 type MCPRequest struct {
 	lambdas.LambdaRequest
-	JSONRPC string         `json:"jsonrpc"`
-	ID      int            `json:"id"`
-	Method  string         `json:"method"`
-	Params  map[string]any `json:"params"`
+	JSONRPC string           `json:"jsonrpc"`
+	ID      int              `json:"id"`
+	Method  string           `json:"method"`
+	Params  MCPRequestParams `json:"params"`
 }
 
 // ToolDescription represents an MCP tool description

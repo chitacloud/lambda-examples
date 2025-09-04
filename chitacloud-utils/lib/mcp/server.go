@@ -56,27 +56,21 @@ func (s *Server) Handle(w http.ResponseWriter, r *http.Request, req MCPRequest, 
 		fmt.Println("Sending tools list response")
 
 	case "tools/call":
-		toolName := req.Params["name"]
+		toolName := req.Params.Name
 
-		if toolName, ok := toolName.(string); ok {
-			tool := s.FindTool(toolName)
-			if tool != nil {
-				responseData, err = tool.Handler(req.Params)
-				if err != nil {
-					fmt.Printf("Error calling tool %s: %s\n", toolName, err.Error())
-					responseData = map[string]any{"error": err.Error()}
-				}
-			} else {
-				fmt.Printf("Tool %s not found\n", toolName)
-				responseData = map[string]any{"error": "tool not found"}
+		if tool := s.FindTool(toolName); tool != nil {
+			responseData, err = tool.Handler(req.Params.Arguments)
+			if err != nil {
+				fmt.Printf("Error calling tool %s: %s\n", toolName, err.Error())
+				responseData = map[string]any{"error": err.Error()}
 			}
 		} else {
-			fmt.Printf("Tool name must be a string\n")
-			responseData = map[string]any{"error": "tool name must be a string"}
+			fmt.Printf("Tool %s not found\n", toolName)
+			responseData = map[string]any{"error": "tool not found"}
 		}
 	default:
 		// Default path - for compatibility with legacy clients
-		responseData, err = s.DefaultHandler(req.Params)
+		responseData, err = s.DefaultHandler(req.Params.Arguments)
 		fmt.Println("Sending default path response")
 	}
 
@@ -173,11 +167,15 @@ func InitHttp(r *http.Request, w http.ResponseWriter, req MCPRequest) (MCPInfo, 
 	}
 	fmt.Printf("Params: %s\n", string(paramsB))
 
-	if id, ok := req.Params["requestId"]; ok {
+	if id, ok := req.Params.Meta["progressToken"]; ok {
 		if idStr, ok := id.(string); ok {
 			requestID, _ = strconv.Atoi(idStr)
 		} else if idInt, ok := id.(int); ok {
 			requestID = idInt
+		} else if idInt32, ok := id.(int32); ok {
+			requestID = int(idInt32)
+		} else if idInt64, ok := id.(int64); ok {
+			requestID = int(idInt64)
 		}
 	}
 
