@@ -1,4 +1,4 @@
-package main
+package mcp_hour
 
 import (
 	"bufio"
@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"mcp-hour/lib/mcp"
+	"github.com/chitacloud/chita-utils/lib/mcp"
 )
 
 // testResponseWriter is a mock http.ResponseWriter for testing
@@ -35,27 +35,27 @@ func (w *testResponseWriter) WriteHeader(statusCode int) {
 func parseSSEEvent(dataLine string) (HourResponse, error) {
 	// SSE data lines are prefixed with "data: "
 	dataLine = strings.TrimPrefix(dataLine, "data: ")
-	
+
 	// Try parsing JSON-RPC 2.0 response format where hour data is in 'result' field
 	var jsonRpcResp struct {
-		JsonRPC string      `json:"jsonrpc"`
-		ID      int         `json:"id"`
+		JsonRPC string       `json:"jsonrpc"`
+		ID      int          `json:"id"`
 		Result  HourResponse `json:"result"`
 	}
-	
+
 	err := json.Unmarshal([]byte(dataLine), &jsonRpcResp)
 	if err == nil && (jsonRpcResp.Result.Hour > 0 || jsonRpcResp.Result.AmPm != "") {
 		// Successfully parsed JSON-RPC format with result
 		return jsonRpcResp.Result, nil
 	}
-	
+
 	// Try direct format (for backward compatibility)
 	var directResp HourResponse
 	err = json.Unmarshal([]byte(dataLine), &directResp)
 	if err == nil && (directResp.Hour > 0 || directResp.AmPm != "") {
 		return directResp, nil
 	}
-	
+
 	return HourResponse{}, fmt.Errorf("failed to parse SSE event: %s", dataLine)
 }
 

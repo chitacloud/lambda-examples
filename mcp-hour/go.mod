@@ -1,9 +1,12 @@
-module mcp-hour
+module example-lambdas/mcp-hour
 
-go 1.23.2
+go 1.24.2
 
-toolchain go1.23.10
+replace github.com/chitacloud/chita-utils => ../chitacloud-utils
 
-require github.com/fredyk/westack-go/v2/lambdas v0.0.0-20250526112648-4564fcf12f92
+require github.com/chitacloud/chita-utils v0.0.0-00010101000000-000000000000
 
-require github.com/goccy/go-json v0.10.4 // indirect
+require (
+	github.com/fredyk/westack-go/v2/lambdas v0.0.0-20250526112648-4564fcf12f92 // indirect
+	github.com/goccy/go-json v0.10.4 // indirect
+)

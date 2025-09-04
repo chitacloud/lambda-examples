@@ -1,7 +1,7 @@
 package domain_test
 
 import (
-	"mcp-hour/domain"
+	"example-lambdas/mcp-hour/domain"
 	"testing"
 )
 
