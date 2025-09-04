@@ -45,27 +45,27 @@ func registerGetHourTool(server *mcp.Server) {
 		Description: "Get the current timestamp in UTC",
 		InputSchema: mcp.Schema{
 			Type:       "object",
-			Properties: map[string]mcp.ParameterProperty{},
+			Properties: map[string]any{},
 			Required:   []string{},
 		},
 		OutputSchema: mcp.Schema{
 			Type: "object",
-			Properties: map[string]mcp.ParameterProperty{
-				"hour": {
-					Type:        "integer",
-					Description: "Current hour in 12-hour format",
+			Properties: map[string]any{
+				"hour": map[string]any{
+					"type":        "integer",
+					"description": "Current hour in 12-hour format",
 				},
-				"amPm": {
-					Type:        "string",
-					Description: "AM or PM indicator",
+				"amPm": map[string]any{
+					"type":        "string",
+					"description": "AM or PM indicator",
 				},
-				"message": {
-					Type:        "string",
-					Description: "Message containing the current hour and AM/PM indicator",
+				"message": map[string]any{
+					"type":        "string",
+					"description": "Message containing the current hour and AM/PM indicator",
 				},
-				"currentTime": {
-					Type:        "string",
-					Description: "Current time in ISO format",
+				"currentTime": map[string]any{
+					"type":        "string",
+					"description": "Current time in ISO format",
 				},
 			},
 			Required: []string{"hour", "amPm", "message", "currentTime"},
@@ -82,32 +82,32 @@ func registerGetTimeTool(server *mcp.Server) {
 		Description: "Get the current timestamp in the specified timezone",
 		InputSchema: mcp.Schema{
 			Type: "object",
-			Properties: map[string]mcp.ParameterProperty{
-				"timezone": {
-					Type:        "string",
-					Description: "Optional timezone (defaults to system timezone)",
+			Properties: map[string]any{
+				"timezone": map[string]any{
+					"type":        "string",
+					"description": "Optional timezone (defaults to system timezone)",
 				},
 			},
 			Required: []string{},
 		},
 		OutputSchema: mcp.Schema{
 			Type: "object",
-			Properties: map[string]mcp.ParameterProperty{
-				"hour": {
-					Type:        "integer",
-					Description: "Current hour in 12-hour format",
+			Properties: map[string]any{
+				"hour": map[string]any{
+					"type":        "integer",
+					"description": "Current hour in 12-hour format",
 				},
-				"amPm": {
-					Type:        "string",
-					Description: "AM or PM indicator",
+				"amPm": map[string]any{
+					"type":        "string",
+					"description": "AM or PM indicator",
 				},
-				"message": {
-					Type:        "string",
-					Description: "Message containing the current hour and AM/PM indicator",
+				"message": map[string]any{
+					"type":        "string",
+					"description": "Message containing the current hour and AM/PM indicator",
 				},
-				"currentTime": {
-					Type:        "string",
-					Description: "Current time in ISO format",
+				"currentTime": map[string]any{
+					"type":        "string",
+					"description": "Current time in ISO format",
 				},
 			},
 			Required: []string{"hour", "amPm", "message", "currentTime"},

@@ -30,13 +30,7 @@ type ToolDescription struct {
 
 // Schema describes the parameters for a tool
 type Schema struct {
-	Type       string                       `json:"type"`
-	Properties map[string]ParameterProperty `json:"properties"`
-	Required   []string                     `json:"required"`
-}
-
-// ParameterProperty describes a parameter property
-type ParameterProperty struct {
-	Type        string `json:"type"`
-	Description string `json:"description,omitempty"`
+	Type       string         `json:"type"`
+	Properties map[string]any `json:"properties"`
+	Required   []string       `json:"required"`
 }
