@@ -8,13 +8,16 @@ import (
 
 func TestSystemClock_GetCurrentHour(t *testing.T) {
 	// Create the adapter
-	clock := adapters.NewSystemClock()
+	clock := adapters.NewSystemClock("")
 
 	// Get the current hour from the adapter
-	hour12, amPm, timeStr := clock.GetCurrentHour()
+	hour12, amPm, timeStr, err := clock.GetCurrentHour()
+	if err != nil {
+		t.Fatalf("GetCurrentHour() returned an error: %v", err)
+	}
 
 	// Get the current time directly for verification
-	now := time.Now()
+	now := time.Now().UTC()
 
 	// Validate hour format (1-12)
 	if hour12 < 1 || hour12 > 12 {

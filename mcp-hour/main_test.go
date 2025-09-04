@@ -41,14 +41,18 @@ func parseSSEEvent(dataLine string) (HourResponse, error) {
 		JsonRPC string `json:"jsonrpc"`
 		ID      int    `json:"id"`
 		Result  struct {
-			StructuredContent HourResponse `json:"structuredContent"`
+			StructuredContent string `json:"structuredContent"`
 		} `json:"result"`
 	}
 
 	err := json.Unmarshal([]byte(dataLine), &jsonRpcResp)
-	if err == nil && (jsonRpcResp.Result.StructuredContent.Hour > 0 || jsonRpcResp.Result.StructuredContent.AmPm != "") {
-		// Successfully parsed JSON-RPC format with result
-		return jsonRpcResp.Result.StructuredContent, nil
+	if err == nil && jsonRpcResp.Result.StructuredContent != "" {
+		var hourResp HourResponse
+		err := json.Unmarshal([]byte(jsonRpcResp.Result.StructuredContent), &hourResp)
+		if err != nil {
+			return HourResponse{}, fmt.Errorf("failed to unmarshal structuredContent: %w", err)
+		}
+		return hourResp, nil
 	}
 
 	// Try direct format (for backward compatibility)
@@ -120,9 +124,8 @@ func TestHandler(t *testing.T) {
 		t.Errorf("Message should start with '%s', got '%s'", expectedMessagePart, response.Message)
 	}
 
-	// Ensure the currentTime string is valid
-	_, err = time.Parse(time.RFC3339, response.CurrentTime)
-	if err != nil {
-		t.Errorf("CurrentTime '%s' is not in the expected format: %v", response.CurrentTime, err)
+	// Ensure the currentTime string is a valid RFC3339 timestamp
+	if _, err := time.Parse(time.RFC3339, response.CurrentTime); err != nil {
+		t.Errorf("Expected currentTime to be a valid RFC3339 timestamp, but got error: %v", err)
 	}
 }

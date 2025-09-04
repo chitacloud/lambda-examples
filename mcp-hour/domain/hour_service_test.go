@@ -12,8 +12,8 @@ type MockClock struct {
 	CurrentTime string
 }
 
-func (m *MockClock) GetCurrentHour() (int, string, string) {
-	return m.Hour, m.AmPm, m.CurrentTime
+func (m *MockClock) GetCurrentHour() (int, string, string, error) {
+	return m.Hour, m.AmPm, m.CurrentTime, nil
 }
 
 func TestHourService(t *testing.T) {
@@ -28,7 +28,10 @@ func TestHourService(t *testing.T) {
 	hourService := domain.NewHourService(mockClock)
 
 	// Get the hour information
-	hour, amPm, currentTime := hourService.GetHourInfo()
+	hour, amPm, currentTime, err := hourService.GetHourInfo()
+	if err != nil {
+		t.Fatalf("GetHourInfo() returned an error: %v", err)
+	}
 
 	// Verify the returned values
 	if hour != 10 {
