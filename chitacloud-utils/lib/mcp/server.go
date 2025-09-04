@@ -41,14 +41,11 @@ func (s *Server) SetDefaultHandler(handler func(params map[string]any) (map[stri
 func (s *Server) Handle(w http.ResponseWriter, r *http.Request, req MCPRequest, mcpInfo MCPInfo) (io.ReadCloser, error) {
 
 	// DEBUG, print body
-	b, err := json.Marshal(req.LambdaRequest.Payload)
-	if err != nil {
-		return nil, err
-	}
-	fmt.Println("[DEBUG] Request body:", string(b))
+	fmt.Println("[DEBUG] Request body:", string(req.LambdaRequest.Payload))
 
 	// Prepare the response based on path
 	var responseData map[string]any
+	var err error
 
 	// Handle different MCP protocol paths
 	switch mcpInfo.Method {
