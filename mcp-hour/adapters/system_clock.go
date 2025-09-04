@@ -19,6 +19,8 @@ func NewSystemClock(timezone string) *SystemClock {
 func (c *SystemClock) GetCurrentHour() (int, string, string, error) {
 	now := time.Now()
 
+	fmt.Printf("Using timezone: %s\n", c.timezone)
+
 	if c.timezone != "" {
 		location, err := time.LoadLocation(c.timezone)
 		if err != nil {
@@ -30,7 +32,12 @@ func (c *SystemClock) GetCurrentHour() (int, string, string, error) {
 	}
 
 	// Format the full time string
-	currentTime := now.Format(time.RFC3339)
+	var currentTime string
+	if c.timezone != "" {
+		currentTime = now.Format(time.RFC3339)
+	} else {
+		currentTime = now.UTC().Format(time.RFC3339)
+	}
 
 	// Get hour in 24-hour format
 	hour24 := now.Hour()
