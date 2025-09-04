@@ -32,17 +32,6 @@ func Handler(r *http.Request, w http.ResponseWriter, req mcp.MCPRequest) (io.Rea
 		return nil, nil
 	}
 
-	// DEBUG, print body
-	body, err := r.GetBody()
-	if err != nil {
-		return nil, err
-	}
-	b, err := io.ReadAll(body)
-	if err != nil {
-		return nil, err
-	}
-	fmt.Println("Request body:", string(b))
-
 	return server.Handle(w, r, req, mcpInfo)
 }
 
