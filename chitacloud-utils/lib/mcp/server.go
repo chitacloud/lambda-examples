@@ -38,14 +38,20 @@ func (s *Server) SetDefaultHandler(handler func(params map[string]any) (map[stri
 	s.DefaultHandler = handler
 }
 
-func (s *Server) Handle(w http.ResponseWriter, r *http.Request, req MCPRequest, mcpInfo MCPInfo) (io.ReadCloser, error) {
+func (s *Server) Handle(w http.ResponseWriter, r *http.Request, req MCPRequest) (io.ReadCloser, error) {
+
+	mcpInfo, err := InitHttp(r, w, req)
+	if err != nil {
+		return nil, err
+	} else if mcpInfo.IsPreflight {
+		return nil, nil
+	}
 
 	// DEBUG, print body
 	fmt.Println("[DEBUG] Request body:", string(req.LambdaRequest.Payload))
 
 	// Prepare the response based on path
 	var responseData map[string]any
-	var err error
 
 	// Handle different MCP protocol paths
 	switch mcpInfo.Method {

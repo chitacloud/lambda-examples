@@ -25,14 +25,7 @@ func Handler(r *http.Request, w http.ResponseWriter, req mcp.MCPRequest) (io.Rea
 	fmt.Println("MCP request:", req.JSONRPC, req.ID, req.Method)
 	fmt.Println("Request headers:", r.Header)
 
-	mcpInfo, err := mcp.InitHttp(r, w, req)
-	if err != nil {
-		return nil, err
-	} else if mcpInfo.IsPreflight {
-		return nil, nil
-	}
-
-	return server.Handle(w, r, req, mcpInfo)
+	return server.Handle(w, r, req)
 }
 
 func init() {
