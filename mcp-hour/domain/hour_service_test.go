@@ -3,7 +3,7 @@ package domain_test
 import (
 	"testing"
 
-	"github.com/chitacloud/example-lambdas/mcp-hour/domain"
+	"github.com/chitacloud/lambda-examples/mcp-hour/domain"
 )
 
 // MockClock is a mock implementation of the ClockPort interface

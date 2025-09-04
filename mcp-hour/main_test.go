@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/chitacloud/example-lambdas/chita-utils/lib/mcp"
+	"github.com/chitacloud/lambda-examples/chita-utils/lib/mcp"
 )
 
 // testResponseWriter is a mock http.ResponseWriter for testing

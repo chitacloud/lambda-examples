@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/chitacloud/example-lambdas/mcp-hour/adapters"
-	"github.com/chitacloud/example-lambdas/mcp-hour/domain"
+	"github.com/chitacloud/lambda-examples/mcp-hour/adapters"
+	"github.com/chitacloud/lambda-examples/mcp-hour/domain"
 
-	"github.com/chitacloud/example-lambdas/chita-utils/lib/mcp"
+	"github.com/chitacloud/lambda-examples/chita-utils/lib/mcp"
 )
 
 // getHourInfo returns the current hour information using domain services
