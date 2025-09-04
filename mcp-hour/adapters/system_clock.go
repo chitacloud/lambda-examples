@@ -1,20 +1,33 @@
 package adapters
 
 import (
+	"fmt"
 	"time"
 )
 
 // SystemClock is an adapter that implements the ClockPort interface
-type SystemClock struct{}
+type SystemClock struct {
+	timezone string
+}
 
 // NewSystemClock creates a new SystemClock adapter
-func NewSystemClock() *SystemClock {
-	return &SystemClock{}
+func NewSystemClock(timezone string) *SystemClock {
+	return &SystemClock{timezone: timezone}
 }
 
 // GetCurrentHour returns the current hour in 12-hour format, AM/PM designation, and full time string
-func (c *SystemClock) GetCurrentHour() (int, string, string) {
+func (c *SystemClock) GetCurrentHour() (int, string, string, error) {
 	now := time.Now()
+
+	if c.timezone != "" {
+		location, err := time.LoadLocation(c.timezone)
+		if err != nil {
+			return 0, "", "", fmt.Errorf("failed to load location for tz=%s: %w", c.timezone, err)
+		}
+		now = now.In(location)
+	} else {
+		now = now.UTC()
+	}
 
 	// Format the full time string
 	currentTime := now.Format(time.RFC3339)
@@ -34,5 +47,5 @@ func (c *SystemClock) GetCurrentHour() (int, string, string) {
 		amPm = "PM"
 	}
 
-	return hour12, amPm, currentTime
+	return hour12, amPm, currentTime, nil
 }

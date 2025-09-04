@@ -9,13 +9,16 @@ import (
 )
 
 // getHourInfo returns the current hour information using domain services
-func getHourInfo() HourResponse {
+func getHourInfo(timezone string) HourResponse {
 	// Create the domain service with a system clock adapter
-	clockAdapter := adapters.NewSystemClock()
+	clockAdapter := adapters.NewSystemClock(timezone)
 	hourService := domain.NewHourService(clockAdapter)
 
 	// Get the hour information from domain service
-	hour, amPm, currentTime := hourService.GetHourInfo()
+	hour, amPm, currentTime, err := hourService.GetHourInfo()
+	if err != nil {
+		return HourResponse{Error: err.Error()}
+	}
 	message := fmt.Sprintf("Current hour is %s", currentTime)
 
 	// currentTime is already formatted as ISO8601 from the adapter
@@ -34,14 +37,9 @@ func registerGetHourTool(server *mcp.Server) {
 		Name:        "get_hour",
 		Description: "Get the current hour",
 		InputSchema: mcp.Schema{
-			Type: "object",
-			Properties: map[string]mcp.ParameterProperty{
-				"timezone": {
-					Type:        "string",
-					Description: "Optional timezone (defaults to system timezone)",
-				},
-			},
-			Required: []string{},
+			Type:       "object",
+			Properties: map[string]mcp.ParameterProperty{},
+			Required:   []string{},
 		},
 		OutputSchema: mcp.Schema{
 			Type: "object",
@@ -66,7 +64,7 @@ func registerGetHourTool(server *mcp.Server) {
 			Required: []string{"hour", "amPm", "message", "currentTime"},
 		},
 		Handler: func(params map[string]any) (map[string]any, error) {
-			responseData := getFormattedHourInfo()
+			responseData := getFormattedHourInfo(params)
 			return responseData, nil
 		},
 	})
@@ -109,7 +107,7 @@ func registerGetTimeTool(server *mcp.Server) {
 			Required: []string{"hour", "amPm", "message", "currentTime"},
 		},
 		Handler: func(params map[string]any) (map[string]any, error) {
-			responseData := getFormattedHourInfo()
+			responseData := getFormattedHourInfo(params)
 			return responseData, nil
 		},
 	})
@@ -117,12 +115,21 @@ func registerGetTimeTool(server *mcp.Server) {
 
 func registerDefaultHandler(server *mcp.Server) {
 	server.SetDefaultHandler(func(params map[string]any) (map[string]any, error) {
-		return getFormattedHourInfo(), nil
+		return getFormattedHourInfo(params), nil
 	})
 }
 
-func getFormattedHourInfo() map[string]any {
-	hourInfo := getHourInfo()
+func getFormattedHourInfo(params map[string]any) map[string]any {
+
+	timezone := ""
+	if tz, ok := params["timezone"]; ok {
+		timezone = tz.(string)
+	}
+
+	hourInfo := getHourInfo(timezone)
+	if hourInfo.Error != "" {
+		return map[string]any{"error": hourInfo.Error}
+	}
 	responseData := map[string]any{
 		"content": []map[string]any{
 			{

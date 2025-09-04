@@ -14,6 +14,6 @@ func NewHourService(clock ClockPort) *HourService {
 }
 
 // GetHourInfo returns the current hour information
-func (s *HourService) GetHourInfo() (int, string, string) {
+func (s *HourService) GetHourInfo() (int, string, string, error) {
 	return s.clock.GetCurrentHour()
 }

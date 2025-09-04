@@ -15,6 +15,7 @@ type HourResponse struct {
 	AmPm        string `json:"amPm"`
 	Message     string `json:"message"`
 	CurrentTime string `json:"currentTime"`
+	Error       string `json:"error"`
 }
 
 var server *mcp.Server

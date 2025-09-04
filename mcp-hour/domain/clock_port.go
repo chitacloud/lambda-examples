@@ -4,5 +4,5 @@ package domain
 // This is a secondary/driven port that will be implemented by adapters
 type ClockPort interface {
 	// GetCurrentHour returns the current hour (1-12), AM/PM indicator, and full time string
-	GetCurrentHour() (int, string, string)
+	GetCurrentHour() (int, string, string, error)
 }

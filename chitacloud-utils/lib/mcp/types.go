@@ -19,7 +19,7 @@ type ToolDescription struct {
 	InputSchema  Schema `json:"inputSchema"`
 	OutputSchema Schema `json:"outputSchema"`
 
-	Handler     func(params map[string]any) (map[string]any, error) `json:"-"`
+	Handler func(params map[string]any) (map[string]any, error) `json:"-"`
 }
 
 // Schema describes the parameters for a tool

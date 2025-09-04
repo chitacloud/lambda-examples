@@ -63,12 +63,15 @@ func (s *Server) Handle(w http.ResponseWriter, r *http.Request, req MCPRequest, 
 			if tool != nil {
 				responseData, err = tool.Handler(req.Params)
 				if err != nil {
+					fmt.Printf("Error calling tool %s: %s\n", toolName, err.Error())
 					responseData = map[string]any{"error": err.Error()}
 				}
 			} else {
+				fmt.Printf("Tool %s not found\n", toolName)
 				responseData = map[string]any{"error": "tool not found"}
 			}
 		} else {
+			fmt.Printf("Tool name must be a string\n")
 			responseData = map[string]any{"error": "tool name must be a string"}
 		}
 	default:
@@ -197,6 +200,7 @@ func Response(mcpInfo MCPInfo, responseData interface{}, err error) (io.ReadClos
 	var buffer strings.Builder
 
 	if err != nil {
+		fmt.Printf("Error: %s\n", err.Error())
 		responseData = map[string]any{"error": err.Error()}
 	} else {
 
