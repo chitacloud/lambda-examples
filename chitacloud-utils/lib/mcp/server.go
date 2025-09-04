@@ -72,8 +72,12 @@ func (s *Server) Handle(w http.ResponseWriter, r *http.Request, req MCPRequest, 
 			err = errors.New("tool not found")
 		}
 	default:
-		// Default path - for compatibility with legacy clients
-		responseData, err = s.DefaultHandler(req.Params.Arguments)
+		if s.DefaultHandler == nil {
+			fmt.Printf("[DEBUG] Default handler not set\n")
+			responseData = map[string]any{"status": "OK"}
+		} else {
+			responseData, err = s.DefaultHandler(req.Params.Arguments)
+		}
 		fmt.Println("Sending default path response")
 	}
 
