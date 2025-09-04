@@ -54,7 +54,23 @@ func FormatMCPServerResponse(id int, method string, content any, err error) ([]b
 		responseObj["error"] = JsonRPCError{Code: ErrUnkown, Message: err.Error(), Data: map[string]any{"content": content}}
 	} else {
 		// According to JSON-RPC 2.0, we should use 'result' to contain the response content
-		responseObj["result"] = content
+
+		unstructuredBytes, err := json.Marshal(content)
+		if err != nil {
+			return nil, err
+		}
+
+		responseData := map[string]any{
+			"content": []map[string]any{
+				{
+					"type": "text",
+					"text": string(unstructuredBytes),
+				},
+			},
+			"structuredContent": content,
+		}
+
+		responseObj["result"] = responseData
 	}
 
 	return json.Marshal(responseObj)

@@ -1,7 +1,6 @@
 package mcp_hour
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/chitacloud/lambda-examples/mcp-hour/adapters"
@@ -137,20 +136,6 @@ func getFormattedHourInfo(params map[string]any) (map[string]any, error) {
 		return nil, err
 	}
 
-	unstructuredBytes, err := json.Marshal(hourInfo)
-	if err != nil {
-		return nil, err
-	}
-
-	responseData := map[string]any{
-		"content": []map[string]any{
-			{
-				"type": "text",
-				"text": string(unstructuredBytes),
-			},
-		},
-		"structuredContent": hourInfo,
-	}
 	fmt.Println("Sending get_hour response:", hourInfo)
-	return responseData, nil
+	return hourInfo.ToMap(), nil
 }

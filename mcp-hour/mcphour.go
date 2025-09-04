@@ -18,6 +18,16 @@ type HourResponse struct {
 	Error       string `json:"error"`
 }
 
+func (hr HourResponse) ToMap() map[string]any {
+	return map[string]any{
+		"hour":        hr.Hour,
+		"amPm":        hr.AmPm,
+		"message":     hr.Message,
+		"currentTime": hr.CurrentTime,
+		"error":       hr.Error,
+	}
+}
+
 var server *mcp.Server
 
 // Handler is the lambda entry point for Chita Cloud
