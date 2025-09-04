@@ -41,7 +41,7 @@ func (s *Server) SetDefaultHandler(handler func(params map[string]any) (map[stri
 func (s *Server) Handle(w http.ResponseWriter, r *http.Request, req MCPRequest, mcpInfo MCPInfo) (io.ReadCloser, error) {
 
 	// DEBUG, print body
-	b, err := io.ReadAll(r.Body)
+	b, err := json.Marshal(req.LambdaRequest.Payload)
 	if err != nil {
 		return nil, err
 	}
