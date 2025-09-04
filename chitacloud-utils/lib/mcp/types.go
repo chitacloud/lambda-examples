@@ -39,5 +39,5 @@ type Schema struct {
 	AdditionalProperties bool           `json:"additionalProperties,omitempty"`
 	// for arrays:
 	Items    *Schema  `json:"items,omitempty"`
-	Required []string `json:"required"`
+	Required []string `json:"required,omitempty"`
 }
