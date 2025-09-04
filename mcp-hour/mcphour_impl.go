@@ -141,10 +141,10 @@ func getFormattedHourInfo(params map[string]any) map[string]any {
 		"content": []map[string]any{
 			{
 				"type": "text",
-				"text": hourInfo.Message,
+				"text": string(unstructuredBytes),
 			},
 		},
-		"structuredContent": string(unstructuredBytes),
+		"structuredContent": hourInfo,
 	}
 	fmt.Println("Sending get_hour response:", hourInfo)
 	return responseData
