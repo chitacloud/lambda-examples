@@ -1,0 +1,4 @@
+github.com/fredyk/westack-go/v2/lambdas v0.0.0-20250904092258-4f6557da7f99 h1:FXJ6NTsTZTQnH7uOuzY49c9SjI6oba3kQ+M567xEre4=
+github.com/fredyk/westack-go/v2/lambdas v0.0.0-20250904092258-4f6557da7f99/go.mod h1:fhCqS94tYYxFHm08YBJMF6VapbKXI5RxDr1n4Mlzcd4=
+github.com/goccy/go-json v0.10.4 h1:JSwxQzIqKfmFX1swYPpUThQZp/Ka4wzJdK0LWVytLPM=
+github.com/goccy/go-json v0.10.4/go.mod h1:oq7eo15ShAhp70Anwd5lgX2pLfOS3QCiwU/PULtXL6M=
