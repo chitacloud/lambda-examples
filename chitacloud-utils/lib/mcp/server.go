@@ -41,11 +41,7 @@ func (s *Server) SetDefaultHandler(handler func(params map[string]any) (map[stri
 func (s *Server) Handle(w http.ResponseWriter, r *http.Request, req MCPRequest, mcpInfo MCPInfo) (io.ReadCloser, error) {
 
 	// DEBUG, print body
-	body, err := r.GetBody()
-	if err != nil {
-		return nil, err
-	}
-	b, err := io.ReadAll(body)
+	b, err := io.ReadAll(r.Body)
 	if err != nil {
 		return nil, err
 	}
