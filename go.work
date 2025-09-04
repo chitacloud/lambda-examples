@@ -8,4 +8,5 @@ use (
 	./fibonacci
 	./lambda-with-env
 	./mcp-hour
+	./send-expo-push
 )
