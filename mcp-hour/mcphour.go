@@ -30,7 +30,11 @@ func Handler(r *http.Request, w http.ResponseWriter, req mcp.MCPRequest) (io.Rea
 
 func init() {
 	// Create server with tools
-	server = chitamcputils.CreateMCPServer()
+	server = chitamcputils.DefaultServer(chitamcputils.ServerOptions{
+		Name:        "HourMCP",
+		Version:     "1.0.0",
+		Description: "MCP server that provides current timezone",
+	})
 
 	registerGetHourTool(server)
 
