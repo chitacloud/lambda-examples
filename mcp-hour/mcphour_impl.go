@@ -20,7 +20,13 @@ func getHourInfo(timezone string) (HourResponse, error) {
 	if err != nil {
 		return HourResponse{}, err
 	}
-	message := fmt.Sprintf("Current hour is %s", currentTime)
+
+	var inTimeZoneDescription string
+	if timezone != "" {
+		inTimeZoneDescription = fmt.Sprintf(" in %s", timezone)
+	}
+
+	message := fmt.Sprintf("Current timestamp%s is %s", inTimeZoneDescription, currentTime)
 
 	// currentTime is already formatted as ISO8601 from the adapter
 
