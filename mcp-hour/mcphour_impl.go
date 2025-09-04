@@ -10,7 +10,7 @@ import (
 )
 
 // getHourInfo returns the current hour information using domain services
-func getHourInfo(timezone string) HourResponse {
+func getHourInfo(timezone string) (HourResponse, error) {
 	// Create the domain service with a system clock adapter
 	clockAdapter := adapters.NewSystemClock(timezone)
 	hourService := domain.NewHourService(clockAdapter)
@@ -18,7 +18,7 @@ func getHourInfo(timezone string) HourResponse {
 	// Get the hour information from domain service
 	hour, amPm, currentTime, err := hourService.GetHourInfo()
 	if err != nil {
-		return HourResponse{Error: err.Error()}
+		return HourResponse{}, err
 	}
 	message := fmt.Sprintf("Current hour is %s", currentTime)
 
@@ -30,7 +30,7 @@ func getHourInfo(timezone string) HourResponse {
 		AmPm:        amPm,
 		Message:     message,
 		CurrentTime: currentTime,
-	}
+	}, nil
 }
 
 func registerGetHourTool(server *mcp.Server) {
@@ -65,8 +65,7 @@ func registerGetHourTool(server *mcp.Server) {
 			Required: []string{"hour", "amPm", "message", "currentTime"},
 		},
 		Handler: func(params map[string]any) (map[string]any, error) {
-			responseData := getFormattedHourInfo(params)
-			return responseData, nil
+			return getFormattedHourInfo(params)
 		},
 	})
 }
@@ -108,33 +107,32 @@ func registerGetTimeTool(server *mcp.Server) {
 			Required: []string{"hour", "amPm", "message", "currentTime"},
 		},
 		Handler: func(params map[string]any) (map[string]any, error) {
-			responseData := getFormattedHourInfo(params)
-			return responseData, nil
+			return getFormattedHourInfo(params)
 		},
 	})
 }
 
 func registerDefaultHandler(server *mcp.Server) {
 	server.SetDefaultHandler(func(params map[string]any) (map[string]any, error) {
-		return getFormattedHourInfo(params), nil
+		return getFormattedHourInfo(params)
 	})
 }
 
-func getFormattedHourInfo(params map[string]any) map[string]any {
+func getFormattedHourInfo(params map[string]any) (map[string]any, error) {
 
 	timezone := ""
 	if tz, ok := params["timezone"]; ok {
 		timezone = tz.(string)
 	}
 
-	hourInfo := getHourInfo(timezone)
-	if hourInfo.Error != "" {
-		return map[string]any{"error": hourInfo.Error}
+	hourInfo, err := getHourInfo(timezone)
+	if err != nil {
+		return nil, err
 	}
 
 	unstructuredBytes, err := json.Marshal(hourInfo)
 	if err != nil {
-		return map[string]any{"error": err.Error()}
+		return nil, err
 	}
 
 	responseData := map[string]any{
@@ -147,5 +145,5 @@ func getFormattedHourInfo(params map[string]any) map[string]any {
 		"structuredContent": hourInfo,
 	}
 	fmt.Println("Sending get_hour response:", hourInfo)
-	return responseData
+	return responseData, nil
 }

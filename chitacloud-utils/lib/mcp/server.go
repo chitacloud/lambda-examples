@@ -3,6 +3,7 @@ package mcp
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -66,11 +67,10 @@ func (s *Server) Handle(w http.ResponseWriter, r *http.Request, req MCPRequest, 
 			responseData, err = tool.Handler(req.Params.Arguments)
 			if err != nil {
 				fmt.Printf("Error calling tool %s: %s\n", toolName, err.Error())
-				responseData = map[string]any{"error": err.Error()}
 			}
 		} else {
 			fmt.Printf("Tool %s not found\n", toolName)
-			responseData = map[string]any{"error": "tool not found"}
+			err = errors.New("tool not found")
 		}
 	default:
 		// Default path - for compatibility with legacy clients
@@ -196,28 +196,22 @@ func InitHttp(r *http.Request, w http.ResponseWriter, req MCPRequest) (MCPInfo, 
 
 }
 
-func Response(mcpInfo MCPInfo, responseData interface{}, err error) (io.ReadCloser, error) {
+func Response(mcpInfo MCPInfo, responseData any, err error) (io.ReadCloser, error) {
 
 	// Format as SSE
 	var buffer strings.Builder
 
+	// Format as JSON-RPC 2.0 response for MCP
+	responseBody, err := FormatMCPServerResponse(mcpInfo.RequestID, mcpInfo.Method, responseData, err)
+
 	if err != nil {
-		fmt.Printf("Error: %s\n", err.Error())
-		responseData = map[string]any{"error": err.Error()}
-	} else {
-
-		// Format as JSON-RPC 2.0 response for MCP
-		responseBody, err := FormatMCPServerResponse(mcpInfo.RequestID, mcpInfo.Method, responseData)
-
-		if err != nil {
-			return nil, fmt.Errorf("failed to marshal response: %w", err)
-		}
-
-		// Add data
-		buffer.WriteString("data: ")
-		buffer.Write(responseBody)
-		buffer.WriteString("\n\n")
+		return nil, fmt.Errorf("failed to marshal response: %w", err)
 	}
+
+	// Add data
+	buffer.WriteString("data: ")
+	buffer.Write(responseBody)
+	buffer.WriteString("\n\n")
 
 	return io.NopCloser(strings.NewReader(buffer.String())), nil
 }

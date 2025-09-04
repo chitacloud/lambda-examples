@@ -4,7 +4,7 @@ package mcp
 import "encoding/json"
 
 // FormatMCPServerResponse formats the response according to JSON-RPC 2.0 / MCP protocol
-func FormatMCPServerResponse(id int, method string, content any) ([]byte, error) {
+func FormatMCPServerResponse(id int, method string, content any, err error) ([]byte, error) {
 	responseObj := map[string]interface{}{
 		"jsonrpc": "2.0",
 	}
@@ -13,8 +13,12 @@ func FormatMCPServerResponse(id int, method string, content any) ([]byte, error)
 	responseObj["id"] = id
 	// }
 
-	// According to JSON-RPC 2.0, we should use 'result' to contain the response content
-	responseObj["result"] = content
+	if err != nil {
+		responseObj["error"] = err.Error()
+	} else {
+		// According to JSON-RPC 2.0, we should use 'result' to contain the response content
+		responseObj["result"] = content
+	}
 
 	return json.Marshal(responseObj)
 }
