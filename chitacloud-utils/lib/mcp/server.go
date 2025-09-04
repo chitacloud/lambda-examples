@@ -69,7 +69,7 @@ func (s *Server) Handle(w http.ResponseWriter, r *http.Request, req MCPRequest) 
 		toolName := req.Params.Name
 
 		if tool := s.FindTool(toolName); tool != nil {
-			responseData, err = tool.Handler(req.Params.Arguments)
+			responseData, err = tool.Handler(r, req.Params.Arguments)
 			if err != nil {
 				fmt.Printf("Error calling tool %s: %s\n", toolName, err.Error())
 			} else {

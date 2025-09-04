@@ -1,7 +1,11 @@
 // Package mcp provides utilities for creating Model Context Protocol (MCP) servers
 package mcp
 
-import "github.com/fredyk/westack-go/v2/lambdas"
+import (
+	"net/http"
+
+	"github.com/fredyk/westack-go/v2/lambdas"
+)
 
 type MCPRequestParams struct {
 	Name      string         `json:"name"`
@@ -25,7 +29,7 @@ type ToolDescription struct {
 	InputSchema  Schema `json:"inputSchema"`
 	OutputSchema Schema `json:"outputSchema"`
 
-	Handler func(params map[string]any) (map[string]any, error) `json:"-"`
+	Handler func(r *http.Request, params map[string]any) (map[string]any, error) `json:"-"`
 }
 
 // Schema describes the parameters for a tool

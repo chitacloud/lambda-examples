@@ -2,6 +2,7 @@ package mcp_hour
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/chitacloud/lambda-examples/mcp-hour/adapters"
 	"github.com/chitacloud/lambda-examples/mcp-hour/domain"
@@ -70,7 +71,7 @@ func registerGetHourTool(server *mcp.Server) {
 			},
 			Required: []string{"hour", "amPm", "message", "currentTime"},
 		},
-		Handler: func(params map[string]any) (map[string]any, error) {
+		Handler: func(r *http.Request, params map[string]any) (map[string]any, error) {
 			return getFormattedHourInfo(params)
 		},
 	})
@@ -112,7 +113,7 @@ func registerGetTimeTool(server *mcp.Server) {
 			},
 			Required: []string{"hour", "amPm", "message", "currentTime"},
 		},
-		Handler: func(params map[string]any) (map[string]any, error) {
+		Handler: func(r *http.Request, params map[string]any) (map[string]any, error) {
 			return getFormattedHourInfo(params)
 		},
 	})
