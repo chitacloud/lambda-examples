@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strconv"
 	"strings"
 )
 
@@ -162,34 +161,16 @@ func InitHttp(r *http.Request, w http.ResponseWriter, req MCPRequest) (MCPInfo, 
 	// Define default request ID for JSON-RPC 2.0
 	requestID := req.ID
 
-	// // Extract method from path
-	// pathMethod := GetMethodFromPath(r.URL.Path)
-	// fmt.Printf("Path method: %s\n", pathMethod)
 	paramsB, err := json.Marshal(req.Params)
 	if err != nil {
-		return MCPInfo{}, err
+		return MCPInfo{RequestID: requestID}, err
 	}
 	fmt.Printf("Params: %s\n", string(paramsB))
-
-	if id, ok := req.Params.Meta["progressToken"]; ok {
-		if idStr, ok := id.(string); ok {
-			requestID, _ = strconv.Atoi(idStr)
-		} else if idInt, ok := id.(int); ok {
-			requestID = idInt
-		} else if idInt32, ok := id.(int32); ok {
-			requestID = int(idInt32)
-		} else if idInt64, ok := id.(int64); ok {
-			requestID = int(idInt64)
-		}
-	}
 
 	// Use request method if available, otherwise use path-derived method
 	method := req.Method
 	if method == "" {
-		// method = pathMethod
-		// if method == "" {
 		method = "response"
-		// }
 	}
 
 	return MCPInfo{Method: method, RequestID: requestID, IsPreflight: false}, nil
