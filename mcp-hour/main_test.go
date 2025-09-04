@@ -36,17 +36,19 @@ func parseSSEEvent(dataLine string) (HourResponse, error) {
 	// SSE data lines are prefixed with "data: "
 	dataLine = strings.TrimPrefix(dataLine, "data: ")
 
-	// Try parsing JSON-RPC 2.0 response format where hour data is in 'result' field
+	// Try parsing JSON-RPC 2.0 response format where hour data is in 'result.structuredContent' field
 	var jsonRpcResp struct {
-		JsonRPC string       `json:"jsonrpc"`
-		ID      int          `json:"id"`
-		Result  HourResponse `json:"result"`
+		JsonRPC string `json:"jsonrpc"`
+		ID      int    `json:"id"`
+		Result  struct {
+			StructuredContent HourResponse `json:"structuredContent"`
+		} `json:"result"`
 	}
 
 	err := json.Unmarshal([]byte(dataLine), &jsonRpcResp)
-	if err == nil && (jsonRpcResp.Result.Hour > 0 || jsonRpcResp.Result.AmPm != "") {
+	if err == nil && (jsonRpcResp.Result.StructuredContent.Hour > 0 || jsonRpcResp.Result.StructuredContent.AmPm != "") {
 		// Successfully parsed JSON-RPC format with result
-		return jsonRpcResp.Result, nil
+		return jsonRpcResp.Result.StructuredContent, nil
 	}
 
 	// Try direct format (for backward compatibility)
@@ -119,7 +121,7 @@ func TestHandler(t *testing.T) {
 	}
 
 	// Ensure the currentTime string is valid
-	_, err = time.Parse("2006-01-02 15:04:05", response.CurrentTime)
+	_, err = time.Parse(time.RFC3339, response.CurrentTime)
 	if err != nil {
 		t.Errorf("CurrentTime '%s' is not in the expected format: %v", response.CurrentTime, err)
 	}
