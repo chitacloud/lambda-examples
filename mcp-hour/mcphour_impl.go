@@ -42,7 +42,7 @@ func getHourInfo(timezone string) (HourResponse, error) {
 func registerGetHourTool(server *mcp.Server) {
 	server.RegisterTool(mcp.ToolDescription{
 		Name:        "get_hour",
-		Description: "Get the current hour in UTC",
+		Description: "Get the current timestamp in UTC",
 		InputSchema: mcp.Schema{
 			Type:       "object",
 			Properties: map[string]mcp.ParameterProperty{},
@@ -79,7 +79,7 @@ func registerGetHourTool(server *mcp.Server) {
 func registerGetTimeTool(server *mcp.Server) {
 	server.RegisterTool(mcp.ToolDescription{
 		Name:        "get_time",
-		Description: "Get the current time",
+		Description: "Get the current timestamp in the specified timezone",
 		InputSchema: mcp.Schema{
 			Type: "object",
 			Properties: map[string]mcp.ParameterProperty{
