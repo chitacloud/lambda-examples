@@ -1,9 +1,10 @@
 package adapters_test
 
 import (
-	"example-lambdas/mcp-hour/adapters"
 	"testing"
 	"time"
+
+	"github.com/chitacloud/example-lambdas/mcp-hour/adapters"
 )
 
 func TestSystemClock_GetCurrentHour(t *testing.T) {

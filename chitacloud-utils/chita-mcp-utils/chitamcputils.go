@@ -1,6 +1,6 @@
 package chitamcputils
 
-import "github.com/chitacloud/chita-utils/lib/mcp"
+import "github.com/chitacloud/example-lambdas/chita-utils/lib/mcp"
 
 // CreateMCPServer initializes and configures an MCP server for our hour service
 func CreateMCPServer() *mcp.Server {

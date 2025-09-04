@@ -5,8 +5,8 @@ import (
 	"io"
 	"net/http"
 
-	chitamcputils "github.com/chitacloud/chita-utils/chita-mcp-utils"
-	"github.com/chitacloud/chita-utils/lib/mcp"
+	chitamcputils "github.com/chitacloud/example-lambdas/chita-utils/chita-mcp-utils"
+	"github.com/chitacloud/example-lambdas/chita-utils/lib/mcp"
 )
 
 // HourResponse represents the response structure

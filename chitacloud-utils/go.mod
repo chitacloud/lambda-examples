@@ -1,4 +1,4 @@
-module github.com/chitacloud/chita-utils
+module github.com/chitacloud/example-lambdas/chita-utils
 
 go 1.24.2
 

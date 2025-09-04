@@ -2,11 +2,12 @@ package mcp_hour
 
 import (
 	"encoding/json"
-	"example-lambdas/mcp-hour/adapters"
-	"example-lambdas/mcp-hour/domain"
 	"fmt"
 
-	"github.com/chitacloud/chita-utils/lib/mcp"
+	"github.com/chitacloud/example-lambdas/mcp-hour/adapters"
+	"github.com/chitacloud/example-lambdas/mcp-hour/domain"
+
+	"github.com/chitacloud/example-lambdas/chita-utils/lib/mcp"
 )
 
 // getHourInfo returns the current hour information using domain services
