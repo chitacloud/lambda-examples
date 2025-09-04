@@ -3,7 +3,7 @@ module github.com/chitacloud/lambda-examples/mcp-hour
 go 1.24.2
 
 replace github.com/chitacloud/lambda-examples/chitacloud-utils => ../chitacloud-utils
-
+replace github.com/chitacloud/lambda-examples/chitacloud-utils/chita-mcp-utils => ../chitacloud-utils/chita-mcp-utils
 require github.com/chitacloud/lambda-examples/chitacloud-utils v0.0.0-00010101000000-000000000000
 
 require (
