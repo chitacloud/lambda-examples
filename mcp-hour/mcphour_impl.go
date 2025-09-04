@@ -1,6 +1,7 @@
 package mcp_hour
 
 import (
+	"encoding/json"
 	"example-lambdas/mcp-hour/adapters"
 	"example-lambdas/mcp-hour/domain"
 	"fmt"
@@ -130,6 +131,12 @@ func getFormattedHourInfo(params map[string]any) map[string]any {
 	if hourInfo.Error != "" {
 		return map[string]any{"error": hourInfo.Error}
 	}
+
+	unstructuredBytes, err := json.Marshal(hourInfo)
+	if err != nil {
+		return map[string]any{"error": err.Error()}
+	}
+
 	responseData := map[string]any{
 		"content": []map[string]any{
 			{
@@ -137,7 +144,7 @@ func getFormattedHourInfo(params map[string]any) map[string]any {
 				"text": hourInfo.Message,
 			},
 		},
-		"structuredContent": hourInfo,
+		"structuredContent": string(unstructuredBytes),
 	}
 	fmt.Println("Sending get_hour response:", hourInfo)
 	return responseData
