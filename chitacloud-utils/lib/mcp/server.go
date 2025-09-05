@@ -89,10 +89,32 @@ func (s *Server) Handle(r *http.Request, w http.ResponseWriter, req MCPRequest) 
 			if err != nil {
 				fmt.Printf("Error calling tool %s: %s\n", toolName, err.Error())
 			} else {
-				// If the response is a slice, we don't need to wrap it.
-				// The Response function will handle streaming it.
+				// If the response is a slice, we must reformat every entry.
 				val := reflect.ValueOf(responseData)
 				if val.Kind() != reflect.Slice {
+
+					var newEntries []map[string]any
+
+					for i := 0; i < val.Len(); i++ {
+						entry := val.Index(i).Interface()
+
+						unstructuredBytes, err := json.Marshal(entry)
+						if err != nil {
+							return nil, err
+						}
+
+						wrappedEntry := map[string]any{
+							"content": []map[string]any{
+								{"type": "text", "text": string(unstructuredBytes)},
+							},
+							"structuredContent": entry,
+						}
+						newEntries = append(newEntries, wrappedEntry)
+					}
+
+					responseData = newEntries
+
+				} else {
 					// According to JSON-RPC 2.0, we should use 'result' to contain the response content
 					unstructuredBytes, err := json.Marshal(responseData)
 					if err != nil {
@@ -108,6 +130,7 @@ func (s *Server) Handle(r *http.Request, w http.ResponseWriter, req MCPRequest) 
 						},
 						"structuredContent": responseData,
 					}
+
 				}
 			}
 		} else {
