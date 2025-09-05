@@ -55,20 +55,19 @@ func FormatMCPServerResponse(id int, method string, streamId string, content any
 	responseObj := map[string]any{
 		"jsonrpc": "2.0",
 	}
-
-	if method == "notifications/progress" && progressInfo != nil {
-		responseObj["method"] = method
-		// Progress notifications should only contain progress information.
-		responseObj["params"] = map[string]any{
-			"progressToken": progressInfo.ProgressToken,
-			"progress":      progressInfo.Progress,
-			"total":         progressInfo.Total,
-		}
+	if err != nil {
+		responseObj["error"] = JsonRPCError{Code: ErrUnkown, Message: err.Error(), Data: map[string]any{"content": content}}
 	} else {
-		responseObj["id"] = id
-		if err != nil {
-			responseObj["error"] = JsonRPCError{Code: ErrUnkown, Message: err.Error(), Data: map[string]any{"content": content}}
+		if method == "notifications/progress" && progressInfo != nil {
+			responseObj["method"] = method
+			// Progress notifications should only contain progress information.
+			responseObj["params"] = map[string]any{
+				"progressToken": progressInfo.ProgressToken,
+				"progress":      progressInfo.Progress,
+				"total":         progressInfo.Total,
+			}
 		} else {
+			responseObj["id"] = id
 			responseObj["result"] = content
 		}
 	}

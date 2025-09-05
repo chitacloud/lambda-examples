@@ -268,8 +268,12 @@ func Response(mcpInfo MCPInfo, responseData any, err error, tool *ToolDescriptio
 				buffer.WriteString(fmt.Sprintf("data: %s\n\n", string(dataResponse)))
 			}
 
-			// After streaming, send a final response containing all items to the original tools/call request
-			finalResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, mcpInfo.Method, mcpInfo.StreamID, allItems, nil, nil)
+			// After streaming, send a final response containing all items wrapped in a result object
+			finalResult, err := wrapToValidToolCallResponse(allItems)
+			if err != nil {
+				return nil, fmt.Errorf("failed to wrap final stream response: %w", err)
+			}
+			finalResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, mcpInfo.Method, mcpInfo.StreamID, finalResult, nil, nil)
 			if err != nil {
 				return nil, fmt.Errorf("failed to format final stream response: %w", err)
 			}
@@ -299,8 +303,12 @@ func Response(mcpInfo MCPInfo, responseData any, err error, tool *ToolDescriptio
 				buffer.WriteString(fmt.Sprintf("data: %s\n\n", string(elemBytes)))
 			}
 
-			// After streaming, send a final response containing all items to the original tools/call request
-			finalResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, mcpInfo.Method, mcpInfo.StreamID, allItems, nil, nil)
+			// After streaming, send a final response containing all items wrapped in a result object
+			finalResult, err := wrapToValidToolCallResponse(allItems)
+			if err != nil {
+				return nil, fmt.Errorf("failed to wrap final stream response: %w", err)
+			}
+			finalResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, mcpInfo.Method, mcpInfo.StreamID, finalResult, nil, nil)
 			if err != nil {
 				return nil, fmt.Errorf("failed to format final stream response: %w", err)
 			}
