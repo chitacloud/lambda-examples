@@ -274,7 +274,7 @@ func Response(mcpInfo MCPInfo, responseData any, err error) (io.ReadCloser, erro
 			return nil, err
 		}
 
-		countBytes, err := FormatMCPServerResponse(mcpInfo.RequestID, mcpInfo.Method, countEntry, nil)
+		countBytes, err := FormatMCPServerResponse(mcpInfo.RequestID, "tools/call", countEntry, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -287,7 +287,7 @@ func Response(mcpInfo MCPInfo, responseData any, err error) (io.ReadCloser, erro
 		for i := 0; i < val.Len(); i++ {
 			elem := val.Index(i).Interface()
 
-			responseBody, err := FormatMCPServerResponse(mcpInfo.RequestID, mcpInfo.Method, elem, err)
+			responseBody, err := FormatMCPServerResponse(mcpInfo.RequestID, "tools/stream", elem, err)
 			if err != nil {
 				// If an error occurs formatting one element, we can decide how to handle it.
 				// For now, we'll return the error, stopping the stream.
