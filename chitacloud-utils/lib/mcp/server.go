@@ -275,7 +275,6 @@ func Response(mcpInfo MCPInfo, responseData any, err error) (io.ReadCloser, erro
 			return nil, err
 		}
 
-		buffer.WriteString(fmt.Sprintf("event: %s\n", mcpInfo.Method))
 		buffer.WriteString("data: ")
 		buffer.Write(countBytes)
 		buffer.WriteString("\n\n")
@@ -303,7 +302,6 @@ func Response(mcpInfo MCPInfo, responseData any, err error) (io.ReadCloser, erro
 		}
 
 		// Add event name and data
-		buffer.WriteString(fmt.Sprintf("event: %s\n", mcpInfo.Method))
 		buffer.WriteString(fmt.Sprintf("data: %s\n\n", string(responseBody)))
 	}
 
