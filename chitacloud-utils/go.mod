@@ -7,7 +7,10 @@ require (
 	github.com/goccy/go-json v0.10.4 // indirect
 )
 
-require github.com/fredyk/westack-go/v2/lambdas v0.0.0-20250904092258-4f6557da7f99
+require (
+	github.com/fredyk/westack-go/v2/lambdas v0.0.0-20250904092258-4f6557da7f99
+	github.com/google/uuid v1.6.0
+)
 
 require (
 	github.com/go-openapi/jsonpointer v0.20.2 // indirect

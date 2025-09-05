@@ -12,6 +12,7 @@ type MCPRequestParams struct {
 	Name      string         `json:"name"`
 	Arguments map[string]any `json:"arguments"`
 	Meta      map[string]any `json:"_meta"`
+	StreamID  string         `json:"streamId,omitempty"`
 }
 
 // MCPRequest represents a standard MCP protocol request

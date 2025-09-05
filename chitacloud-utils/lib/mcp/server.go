@@ -108,22 +108,10 @@ func (s *Server) Handle(r *http.Request, w http.ResponseWriter, req MCPRequest) 
 					responseData = newEntries
 
 				} else {
-					// According to JSON-RPC 2.0, we should use 'result' to contain the response content
-					unstructuredBytes, err := json.Marshal(responseData)
+					responseData, err = wrapToValidJsonRPC(responseData)
 					if err != nil {
 						return nil, err
 					}
-
-					responseData = map[string]any{
-						"content": []map[string]any{
-							{
-								"type": "text",
-								"text": string(unstructuredBytes),
-							},
-						},
-						"structuredContent": responseData,
-					}
-
 				}
 			}
 		} else {
@@ -221,6 +209,7 @@ type MCPInfo struct {
 	Method      string
 	RequestID   int
 	IsPreflight bool
+	StreamID    string
 }
 
 func InitHttp(r *http.Request, w http.ResponseWriter, req MCPRequest) (MCPInfo, error) {
@@ -254,7 +243,7 @@ func InitHttp(r *http.Request, w http.ResponseWriter, req MCPRequest) (MCPInfo, 
 		method = "response"
 	}
 
-	return MCPInfo{Method: method, RequestID: requestID, IsPreflight: false}, nil
+	return MCPInfo{Method: method, RequestID: req.ID, IsPreflight: false}, nil
 
 }
 
@@ -274,7 +263,7 @@ func Response(mcpInfo MCPInfo, responseData any, err error) (io.ReadCloser, erro
 			return nil, err
 		}
 
-		countBytes, err := FormatMCPServerResponse(mcpInfo.RequestID, "tools/call", countEntry, nil)
+		countBytes, err := FormatMCPServerResponse(mcpInfo.RequestID, "tools/call", mcpInfo.StreamID, countEntry, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -287,7 +276,7 @@ func Response(mcpInfo MCPInfo, responseData any, err error) (io.ReadCloser, erro
 		for i := 0; i < val.Len(); i++ {
 			elem := val.Index(i).Interface()
 
-			responseBody, err := FormatMCPServerResponse(mcpInfo.RequestID, "tools/stream", elem, err)
+			responseBody, err := FormatMCPServerResponse(mcpInfo.RequestID, "tools/stream", mcpInfo.StreamID, elem, err)
 			if err != nil {
 				// If an error occurs formatting one element, we can decide how to handle it.
 				// For now, we'll return the error, stopping the stream.
@@ -301,7 +290,7 @@ func Response(mcpInfo MCPInfo, responseData any, err error) (io.ReadCloser, erro
 		}
 	} else {
 		// If it's not a slice, handle as a single response
-		responseBody, err := FormatMCPServerResponse(mcpInfo.RequestID, mcpInfo.Method, responseData, err)
+		responseBody, err := FormatMCPServerResponse(mcpInfo.RequestID, mcpInfo.Method, mcpInfo.StreamID, responseData, err)
 		if err != nil {
 			return nil, fmt.Errorf("failed to marshal response: %w", err)
 		}

@@ -43,17 +43,27 @@ type JsonRPCError struct {
 }
 
 // FormatMCPServerResponse formats the response according to JSON-RPC 2.0 / MCP protocol
-func FormatMCPServerResponse(id int, method string, content any, err error) ([]byte, error) {
+func FormatMCPServerResponse(id int, method string, streamId string, content any, err error) ([]byte, error) {
 	responseObj := map[string]any{
 		"jsonrpc": "2.0",
 	}
 
-	responseObj["id"] = id
-
-	if err != nil {
-		responseObj["error"] = JsonRPCError{Code: ErrUnkown, Message: err.Error(), Data: map[string]any{"content": content}}
+	if method == "tools/stream" {
+		responseObj["method"] = method
+		responseObj["params"] = map[string]any{"streamId": streamId, "content": content}
 	} else {
-		responseObj["result"] = content
+		responseObj["id"] = id
+		if err != nil {
+			responseObj["error"] = JsonRPCError{Code: ErrUnkown, Message: err.Error(), Data: map[string]any{"content": content}}
+		} else {
+			if streamId != "" {
+			result := content.(map[string]any)
+			result["streamId"] = streamId
+			responseObj["result"] = result
+		} else {
+			responseObj["result"] = content
+		}
+		}
 	}
 
 	return json.Marshal(responseObj)
