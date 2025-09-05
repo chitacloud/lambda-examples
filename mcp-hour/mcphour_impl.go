@@ -80,18 +80,18 @@ func registerGetTimeTool(server *mcp.Server) {
 			Required: []string{"hour", "amPm", "message", "currentTime", "dayOfWeek"},
 		},
 		Handler: func(r *http.Request, params map[string]any) (any, error) {
-			return getFormattedHourInfo(params)
+			return getFormattedHourInfo(r, params)
 		},
 	})
 }
 
 func registerDefaultHandler(server *mcp.Server) {
 	server.SetDefaultHandler(func(r *http.Request, params map[string]any) (any, error) {
-		return getFormattedHourInfo(params)
+		return getFormattedHourInfo(r, params)
 	})
 }
 
-func getFormattedHourInfo(params map[string]any) (any, error) {
+func getFormattedHourInfo(r *http.Request, params map[string]any) (any, error) {
 
 	timezone := ""
 	if tz, ok := params["timezone"]; ok {

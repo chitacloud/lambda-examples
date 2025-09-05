@@ -25,6 +25,7 @@ func registerExampleSliceTool(server *mcp.Server) {
 			Type: &openapi3.Types{openapi3.TypeObject},
 		},
 		OutputSchema: &openapi3.Schema{
+			Type: &openapi3.Types{openapi3.TypeObject},
 			// First item will be the {count: x} of items
 			// Followed by the items one by one as single entries
 			// oneOf
