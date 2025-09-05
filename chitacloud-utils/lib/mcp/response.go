@@ -58,10 +58,8 @@ func FormatMCPServerResponse(id int, method string, streamId string, content any
 
 	if method == "notifications/progress" && progressInfo != nil {
 		responseObj["method"] = method
-		// The client expects content to be an array of ToolContent parts.
+		// Progress notifications should only contain progress information.
 		responseObj["params"] = map[string]any{
-			"streamId":      streamId,
-			"content":       content,
 			"progressToken": progressInfo.ProgressToken,
 			"progress":      progressInfo.Progress,
 			"total":         progressInfo.Total,
