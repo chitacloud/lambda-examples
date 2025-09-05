@@ -98,16 +98,9 @@ func (s *Server) Handle(r *http.Request, w http.ResponseWriter, req MCPRequest) 
 					for i := 0; i < val.Len(); i++ {
 						entry := val.Index(i).Interface()
 
-						unstructuredBytes, err := json.Marshal(entry)
-						if err != nil {
-							return nil, err
-						}
-
-						wrappedEntry := map[string]any{
-							"content": []map[string]any{
-								{"type": "text", "text": string(unstructuredBytes)},
-							},
-							"structuredContent": entry,
+						wrappedEntry, err1 := wrapToValidJsonRPC(entry)
+						if err1 != nil {
+							return nil, err1
 						}
 						newEntries = append(newEntries, wrappedEntry)
 					}
@@ -151,6 +144,21 @@ func (s *Server) Handle(r *http.Request, w http.ResponseWriter, req MCPRequest) 
 	}
 
 	return Response(mcpInfo, responseData, err)
+}
+
+func wrapToValidJsonRPC(entry any) (map[string]any, error) {
+	unstructuredBytes, err := json.Marshal(entry)
+	if err != nil {
+		return nil, err
+	}
+
+	wrappedEntry := map[string]any{
+		"content": []map[string]any{
+			{"type": "text", "text": string(unstructuredBytes)},
+		},
+		"structuredContent": entry,
+	}
+	return wrappedEntry, nil
 }
 
 func (s *Server) FindTool(name string) *ToolDescription {
@@ -258,6 +266,23 @@ func Response(mcpInfo MCPInfo, responseData any, err error) (io.ReadCloser, erro
 	var buffer strings.Builder
 
 	if val.Kind() == reflect.Slice {
+
+		// First, emit a {"count": x}
+		count := val.Len()
+		countEntry, err := wrapToValidJsonRPC(map[string]any{"count": count})
+		if err != nil {
+			return nil, err
+		}
+
+		countBytes, err := FormatMCPServerResponse(mcpInfo.RequestID, mcpInfo.Method, countEntry, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		buffer.WriteString("data: ")
+		buffer.Write(countBytes)
+		buffer.WriteString("\n\n")
+
 		// If it's a slice, iterate and send each element as a separate event
 		for i := 0; i < val.Len(); i++ {
 			elem := val.Index(i).Interface()
