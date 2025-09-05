@@ -256,7 +256,7 @@ func Response(mcpInfo MCPInfo, responseData any, err error) (io.ReadCloser, erro
 	// Format as SSE
 	var buffer strings.Builder
 
-	if val.Kind() == reflect.Slice && mcpInfo.Method == "tools/call" {
+	if mcpInfo.Method == "tools/call" && val.Kind() == reflect.Slice {
 
 		// If no streamId, generate a new one
 		if mcpInfo.StreamID == "" {
@@ -275,9 +275,9 @@ func Response(mcpInfo MCPInfo, responseData any, err error) (io.ReadCloser, erro
 			return nil, err
 		}
 
-		buffer.WriteString("data: ")
-		buffer.Write(countBytes)
-		buffer.WriteString("\n\n")
+		// Add event name and data
+		buffer.WriteString(fmt.Sprintf("event: %s\n", "tools/call"))
+		buffer.WriteString(fmt.Sprintf("data: %s\n\n", string(countBytes)))
 
 		// If it's a slice, iterate and send each element as a separate event
 		for i := 0; i < val.Len(); i++ {
