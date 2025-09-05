@@ -249,6 +249,13 @@ func Response(mcpInfo MCPInfo, responseData any, err error, tool *ToolDescriptio
 				buffer.WriteString(fmt.Sprintf("event: stream/data\ndata: %s\n\n", string(dataResponse)))
 			}
 
+			// After streaming, send a final response to the original tools/call request
+			finalResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, mcpInfo.Method, mcpInfo.StreamID, map[string]string{"status": "stream_completed"}, nil)
+			if err != nil {
+				return nil, fmt.Errorf("failed to format final stream response: %w", err)
+			}
+			buffer.WriteString(fmt.Sprintf("data: %s\n\n", string(finalResponse)))
+
 		} else if slice, ok := responseData.([]map[string]any); ok && tool.Raw {
 			// If it's a raw slice, iterate and send each element as a separate event
 			for i, elem := range slice {
@@ -270,6 +277,13 @@ func Response(mcpInfo MCPInfo, responseData any, err error, tool *ToolDescriptio
 				buffer.WriteString(fmt.Sprintf("event: %s\n", eventName))
 				buffer.WriteString(fmt.Sprintf("data: %s\n\n", string(elemBytes)))
 			}
+
+			// After streaming, send a final response to the original tools/call request
+			finalResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, mcpInfo.Method, mcpInfo.StreamID, map[string]string{"status": "stream_completed"}, nil)
+			if err != nil {
+				return nil, fmt.Errorf("failed to format final stream response: %w", err)
+			}
+			buffer.WriteString(fmt.Sprintf("data: %s\n\n", string(finalResponse)))
 		}
 	} else {
 		// If it's not a slice, handle as a single response
