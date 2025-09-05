@@ -269,7 +269,7 @@ func Response(mcpInfo MCPInfo, responseData any, err error, tool *ToolDescriptio
 			}
 
 			// After streaming, send a final response containing all items wrapped in a result object
-			finalResult, err := wrapToValidToolCallResponse(allItems)
+			finalResult, err := wrapToValidToolCallResponse(map[string]any{"items": allItems})
 			if err != nil {
 				return nil, fmt.Errorf("failed to wrap final stream response: %w", err)
 			}
