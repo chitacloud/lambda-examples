@@ -100,7 +100,7 @@ func (s *Server) Handle(r *http.Request, w http.ResponseWriter, req MCPRequest) 
 					for i := 0; i < val.Len(); i++ {
 						entry := val.Index(i).Interface()
 
-						wrappedEntry, err1 := wrapToValidJsonRPC(entry)
+						wrappedEntry, err1 := wrapToValidToolCallResponse(entry)
 						if err1 != nil {
 							return nil, err1
 						}
@@ -110,7 +110,7 @@ func (s *Server) Handle(r *http.Request, w http.ResponseWriter, req MCPRequest) 
 					responseData = newEntries
 
 				} else {
-					responseData, err = wrapToValidJsonRPC(responseData)
+					responseData, err = wrapToValidToolCallResponse(responseData)
 					if err != nil {
 						return nil, err
 					}
@@ -136,7 +136,7 @@ func (s *Server) Handle(r *http.Request, w http.ResponseWriter, req MCPRequest) 
 	return Response(mcpInfo, responseData, err)
 }
 
-func wrapToValidJsonRPC(entry any) (map[string]any, error) {
+func wrapToValidToolCallResponse(entry any) (map[string]any, error) {
 	unstructuredBytes, err := json.Marshal(entry)
 	if err != nil {
 		return nil, err
@@ -265,7 +265,7 @@ func Response(mcpInfo MCPInfo, responseData any, err error) (io.ReadCloser, erro
 
 		// First, emit a {"count": x}
 		count := val.Len()
-		countEntry, err := wrapToValidJsonRPC(map[string]any{"count": count})
+		countEntry, err := wrapToValidToolCallResponse(map[string]any{"count": count})
 		if err != nil {
 			return nil, err
 		}
