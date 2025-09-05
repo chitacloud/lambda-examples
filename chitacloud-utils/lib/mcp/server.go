@@ -109,7 +109,7 @@ func (s *Server) Handle(r *http.Request, w http.ResponseWriter, req MCPRequest) 
 		}
 	}
 
-	return Response(mcpInfo, responseData, err, tool)
+	return Response(mcpInfo, responseData, err, tool, req.Params)
 }
 
 func wrapToValidToolCallResponse(entry any) (map[string]any, error) {
@@ -225,7 +225,14 @@ func InitHttp(r *http.Request, w http.ResponseWriter, req MCPRequest) (MCPInfo, 
 
 }
 
-func Response(mcpInfo MCPInfo, responseData any, err error, tool *ToolDescription) (io.ReadCloser, error) {
+func Response(mcpInfo MCPInfo, responseData any, err error, tool *ToolDescription, params MCPRequestParams) (io.ReadCloser, error) {
+	var progressToken string
+	if params.Meta != nil && params.Meta["progressToken"] != nil {
+		if v, ok := params.Meta["progressToken"].(string); ok {
+			progressToken = v
+		}
+	}
+
 	// Use reflection to check if responseData is a slice
 	val := reflect.ValueOf(responseData)
 
@@ -249,7 +256,11 @@ func Response(mcpInfo MCPInfo, responseData any, err error, tool *ToolDescriptio
 				}
 				allItems = append(allItems, wrappedItem)
 
-				dataResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, "tools/stream", mcpInfo.StreamID, wrappedItem["content"], nil)
+				dataResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, "notifications/progress", mcpInfo.StreamID, wrappedItem["content"], &ProgressInfo{
+					ProgressToken: progressToken,
+					Progress:      i + 1,
+					Total:         len(slice),
+				}, nil)
 				if err != nil {
 					return nil, fmt.Errorf("failed to format stream/data for element %d: %w", i, err)
 				}
@@ -258,7 +269,7 @@ func Response(mcpInfo MCPInfo, responseData any, err error, tool *ToolDescriptio
 			}
 
 			// After streaming, send a final response containing all items to the original tools/call request
-			finalResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, mcpInfo.Method, mcpInfo.StreamID, allItems, nil)
+			finalResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, mcpInfo.Method, mcpInfo.StreamID, allItems, nil, nil)
 			if err != nil {
 				return nil, fmt.Errorf("failed to format final stream response: %w", err)
 			}
@@ -289,7 +300,7 @@ func Response(mcpInfo MCPInfo, responseData any, err error, tool *ToolDescriptio
 			}
 
 			// After streaming, send a final response containing all items to the original tools/call request
-			finalResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, mcpInfo.Method, mcpInfo.StreamID, allItems, nil)
+			finalResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, mcpInfo.Method, mcpInfo.StreamID, allItems, nil, nil)
 			if err != nil {
 				return nil, fmt.Errorf("failed to format final stream response: %w", err)
 			}
@@ -297,7 +308,7 @@ func Response(mcpInfo MCPInfo, responseData any, err error, tool *ToolDescriptio
 		}
 	} else {
 		// If it's not a slice, handle as a single response
-		responseBody, err := FormatMCPServerResponse(mcpInfo.RequestID, mcpInfo.Method, mcpInfo.StreamID, responseData, err)
+		responseBody, err := FormatMCPServerResponse(mcpInfo.RequestID, mcpInfo.Method, mcpInfo.StreamID, responseData, nil, err)
 		if err != nil {
 			return nil, fmt.Errorf("failed to marshal response: %w", err)
 		}

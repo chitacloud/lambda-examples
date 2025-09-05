@@ -44,18 +44,27 @@ type JsonRPCError struct {
 	Data    any    `json:"data,omitempty"`
 }
 
+type ProgressInfo struct {
+	ProgressToken string `json:"progressToken"`
+	Progress      int    `json:"progress"`
+	Total         int    `json:"total"`
+}
+
 // FormatMCPServerResponse formats the response according to JSON-RPC 2.0 / MCP protocol
-func FormatMCPServerResponse(id int, method string, streamId string, content any, err error) ([]byte, error) {
+func FormatMCPServerResponse(id int, method string, streamId string, content any, progressInfo *ProgressInfo, err error) ([]byte, error) {
 	responseObj := map[string]any{
 		"jsonrpc": "2.0",
 	}
 
-	if method == "tools/stream" {
+	if method == "notifications/progress" && progressInfo != nil {
 		responseObj["method"] = method
 		// The client expects content to be an array of ToolContent parts.
 		responseObj["params"] = map[string]any{
-			"streamId": streamId,
-			"content":  content,
+			"streamId":      streamId,
+			"content":       content,
+			"progressToken": progressInfo.ProgressToken,
+			"progress":      progressInfo.Progress,
+			"total":         progressInfo.Total,
 		}
 	} else {
 		responseObj["id"] = id
