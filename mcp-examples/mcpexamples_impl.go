@@ -30,12 +30,25 @@ func registerExampleSliceTool(server *mcp.Server) {
 			// Followed by the items one by one as single entries
 			// oneOf
 			OneOf: []*openapi3.SchemaRef{
-				{Value: &openapi3.Schema{Type: &openapi3.Types{openapi3.TypeObject}, Properties: map[string]*openapi3.SchemaRef{
-					"count": {Value: &openapi3.Schema{Type: &openapi3.Types{openapi3.TypeInteger}}}}}},
-				{Value: &openapi3.Schema{Type: &openapi3.Types{openapi3.TypeObject}, Properties: map[string]*openapi3.SchemaRef{
-					"id":   {Value: &openapi3.Schema{Type: &openapi3.Types{openapi3.TypeInteger}}},
-					"name": {Value: &openapi3.Schema{Type: &openapi3.Types{openapi3.TypeString}}},
-				}}},
+				{
+					Value: &openapi3.Schema{
+						Type: &openapi3.Types{openapi3.TypeObject},
+						Properties: map[string]*openapi3.SchemaRef{
+							"count": {Value: &openapi3.Schema{Type: &openapi3.Types{openapi3.TypeInteger}}},
+						},
+						Required: []string{"count"},
+					},
+				},
+				{
+					Value: &openapi3.Schema{
+						Type: &openapi3.Types{openapi3.TypeObject},
+						Properties: map[string]*openapi3.SchemaRef{
+							"id":   {Value: &openapi3.Schema{Type: &openapi3.Types{openapi3.TypeInteger}}},
+							"name": {Value: &openapi3.Schema{Type: &openapi3.Types{openapi3.TypeString}}},
+						},
+						Required: []string{"id", "name"},
+					},
+				},
 			},
 		},
 		Handler: exampleSliceHandler,
