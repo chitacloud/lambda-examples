@@ -13,15 +13,22 @@ func registerStandardSliceTool(server *mcp.Server) {
 			Type: &openapi3.Types{openapi3.TypeObject},
 		},
 		OutputSchema: &openapi3.Schema{
-			Type: &openapi3.Types{openapi3.TypeArray},
-			Items: &openapi3.SchemaRef{
-				Value: &openapi3.Schema{
-					Type: &openapi3.Types{openapi3.TypeObject},
-					Properties: map[string]*openapi3.SchemaRef{
-						"id":   {Value: &openapi3.Schema{Type: &openapi3.Types{openapi3.TypeInteger}}},
-						"name": {Value: &openapi3.Schema{Type: &openapi3.Types{openapi3.TypeString}}},
+			Type: &openapi3.Types{openapi3.TypeObject},
+			Properties: map[string]*openapi3.SchemaRef{
+				"items": {
+					Value: &openapi3.Schema{
+						Type: &openapi3.Types{openapi3.TypeArray},
+						Items: &openapi3.SchemaRef{
+							Value: &openapi3.Schema{
+								Type: &openapi3.Types{openapi3.TypeObject},
+								Properties: map[string]*openapi3.SchemaRef{
+									"id":   {Value: &openapi3.Schema{Type: &openapi3.Types{openapi3.TypeInteger}}},
+									"name": {Value: &openapi3.Schema{Type: &openapi3.Types{openapi3.TypeString}}},
+								},
+								Required: []string{"id", "name"},
+							},
+						},
 					},
-					Required: []string{"id", "name"},
 				},
 			},
 		},
