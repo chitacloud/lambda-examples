@@ -241,11 +241,14 @@ func Response(mcpInfo MCPInfo, responseData any, err error, tool *ToolDescriptio
 
 		if slice, ok := responseData.([]map[string]any); ok && !tool.Raw {
 			// Handle standard slice streaming by sending each item as a separate event.
+			var allItems []map[string]any
 			for i, item := range slice {
 				wrappedItem, err := wrapToValidToolCallResponse(item)
 				if err != nil {
 					return nil, fmt.Errorf("failed to wrap stream item for element %d: %w", i, err)
 				}
+				allItems = append(allItems, wrappedItem)
+
 				dataResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, "tools/stream", mcpInfo.StreamID, wrappedItem["content"], nil)
 				if err != nil {
 					return nil, fmt.Errorf("failed to format stream/data for element %d: %w", i, err)
@@ -253,12 +256,8 @@ func Response(mcpInfo MCPInfo, responseData any, err error, tool *ToolDescriptio
 				buffer.WriteString(fmt.Sprintf("event: stream/data\ndata: %s\n\n", string(dataResponse)))
 			}
 
-			// After streaming, send a final response to the original tools/call request
-			finalMessage, err := wrapToValidToolCallResponse(map[string]string{})
-			if err != nil {
-				return nil, fmt.Errorf("failed to wrap final stream item: %w", err)
-			}
-			finalResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, mcpInfo.Method, mcpInfo.StreamID, finalMessage, nil)
+			// After streaming, send a final response containing all items to the original tools/call request
+			finalResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, mcpInfo.Method, mcpInfo.StreamID, allItems, nil)
 			if err != nil {
 				return nil, fmt.Errorf("failed to format final stream response: %w", err)
 			}
@@ -266,12 +265,14 @@ func Response(mcpInfo MCPInfo, responseData any, err error, tool *ToolDescriptio
 
 		} else if slice, ok := responseData.([]map[string]any); ok && tool.Raw {
 			// If it's a raw slice, iterate and send each element as a separate event
+			var allItems []map[string]any
 			for i, elem := range slice {
 				// Marshal the element to JSON for the data field
 				elemBytes, err := json.Marshal(elem)
 				if err != nil {
 					return nil, fmt.Errorf("failed to marshal response for raw slice element %d: %w", i, err)
 				}
+				allItems = append(allItems, elem)
 
 				// Safely extract event name from the element, default to "message"
 				var eventName string
@@ -286,8 +287,8 @@ func Response(mcpInfo MCPInfo, responseData any, err error, tool *ToolDescriptio
 				buffer.WriteString(fmt.Sprintf("data: %s\n\n", string(elemBytes)))
 			}
 
-			// After streaming, send a final response to the original tools/call request
-			finalResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, mcpInfo.Method, mcpInfo.StreamID, map[string]string{"status": "stream_completed"}, nil)
+			// After streaming, send a final response containing all items to the original tools/call request
+			finalResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, mcpInfo.Method, mcpInfo.StreamID, allItems, nil)
 			if err != nil {
 				return nil, fmt.Errorf("failed to format final stream response: %w", err)
 			}
