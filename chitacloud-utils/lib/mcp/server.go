@@ -261,10 +261,8 @@ func Response(mcpInfo MCPInfo, responseData any, err error) (io.ReadCloser, erro
 		// If it's a slice, iterate and send each element as a separate event
 		for i := 0; i < val.Len(); i++ {
 			elem := val.Index(i).Interface()
-			// Per instructions, wrap each element in a single-element slice
-			singleElementSlice := []any{elem}
 
-			responseBody, err := FormatMCPServerResponse(mcpInfo.RequestID, mcpInfo.Method, singleElementSlice, err)
+			responseBody, err := FormatMCPServerResponse(mcpInfo.RequestID, mcpInfo.Method, elem, err)
 			if err != nil {
 				// If an error occurs formatting one element, we can decide how to handle it.
 				// For now, we'll return the error, stopping the stream.
