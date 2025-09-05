@@ -241,8 +241,7 @@ func Response(mcpInfo MCPInfo, responseData any, err error, tool *ToolDescriptio
 		if slice, ok := responseData.([]map[string]any); ok && !tool.Raw {
 			// Handle standard slice streaming by sending each item as a separate event.
 			for i, item := range slice {
-				dataContent := map[string]any{"event": "data", "item": item}
-				dataResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, "tools/stream", mcpInfo.StreamID, dataContent, nil)
+				dataResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, "tools/stream", mcpInfo.StreamID, item, nil)
 				if err != nil {
 					return nil, fmt.Errorf("failed to format stream/data for element %d: %w", i, err)
 				}
