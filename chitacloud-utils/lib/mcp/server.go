@@ -142,9 +142,9 @@ func SetCORSHeaders(w http.ResponseWriter) {
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 }
 
-// SetSSEHeaders sets standard Server-Sent Events headers
-func SetSSEHeaders(w http.ResponseWriter) {
-	w.Header().Set("Content-Type", "text/event-stream")
+// SetStreamableHTTPHeaders sets the headers for MCP Streamable HTTP transport
+func SetStreamableHTTPHeaders(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/mcp-stream+json")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
 }
@@ -200,8 +200,8 @@ func InitHttp(r *http.Request, w http.ResponseWriter, req MCPRequest) (MCPInfo, 
 		return MCPInfo{IsPreflight: true}, nil
 	}
 
-	// Set SSE headers
-	SetSSEHeaders(w)
+	// Set Streamable HTTP headers
+	SetStreamableHTTPHeaders(w)
 
 	var err error
 
@@ -228,57 +228,37 @@ func Response(mcpInfo MCPInfo, responseData any, err error, tool *ToolDescriptio
 	// Use reflection to check if responseData is a slice
 	val := reflect.ValueOf(responseData)
 
-	// Format as SSE
+	// Format as newline-delimited JSON
 	var buffer strings.Builder
 
 	if mcpInfo.Method == "tools/call" && val.Kind() == reflect.Slice {
-
 		// If no streamId, generate a new one
 		if mcpInfo.StreamID == "" {
 			mcpInfo.StreamID = uuid.New().String()
 		}
 
-		if slice, ok := responseData.([]map[string]any); ok && !tool.Raw {
-			// Handle standard slice streaming by sending each item as a separate event.
+		if slice, ok := responseData.([]map[string]any); ok {
+			// Handle slice streaming by sending each item as a separate JSON-RPC message.
 			for i, item := range slice {
-				dataResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, "tools/stream", mcpInfo.StreamID, item, nil)
+				jsonRpcResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, "tools/stream", mcpInfo.StreamID, item, nil)
 				if err != nil {
-					return nil, fmt.Errorf("failed to format stream/data for element %d: %w", i, err)
+					return nil, fmt.Errorf("failed to format stream data for element %d: %w", i, err)
 				}
-				buffer.WriteString(fmt.Sprintf("event: stream/data\ndata: %s\n\n", string(dataResponse)))
+				buffer.WriteString(string(jsonRpcResponse))
+				buffer.WriteString("\n") // Use newline delimiter
 			}
-
-		} else if slice, ok := responseData.([]map[string]any); ok && tool.Raw {
-			// If it's a raw slice, iterate and send each element as a separate event
-			for i, elem := range slice {
-				// Marshal the element to JSON for the data field
-				elemBytes, err := json.Marshal(elem)
-				if err != nil {
-					return nil, fmt.Errorf("failed to marshal response for raw slice element %d: %w", i, err)
-				}
-
-				// Safely extract event name from the element, default to "message"
-				var eventName string
-				if name, ok := elem["name"].(string); ok {
-					eventName = name
-				} else {
-					eventName = "message"
-				}
-
-				// Add event name and data
-				buffer.WriteString(fmt.Sprintf("event: %s\n", eventName))
-				buffer.WriteString(fmt.Sprintf("data: %s\n\n", string(elemBytes)))
-			}
+		} else {
+			// Handle other slice types if necessary, or return an error.
+			return nil, fmt.Errorf("unsupported slice type for streaming: %T", responseData)
 		}
 	} else {
-		// If it's not a slice, handle as a single response
+		// Handle as a single, non-streaming response
 		responseBody, err := FormatMCPServerResponse(mcpInfo.RequestID, mcpInfo.Method, mcpInfo.StreamID, responseData, err)
 		if err != nil {
 			return nil, fmt.Errorf("failed to marshal response: %w", err)
 		}
-
-		// Add event name and data
-		buffer.WriteString(fmt.Sprintf("data: %s\n\n", string(responseBody)))
+		buffer.WriteString(string(responseBody))
+		buffer.WriteString("\n")
 	}
 
 	return io.NopCloser(strings.NewReader(buffer.String())), nil
