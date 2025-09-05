@@ -239,17 +239,7 @@ func Response(mcpInfo MCPInfo, responseData any, err error, tool *ToolDescriptio
 		}
 
 		if slice, ok := responseData.([]map[string]any); ok && !tool.Raw {
-			// Handle standard slice streaming with stream/start, stream/data, and stream/end
-
-			// 1. Send stream/start event
-			startContent := map[string]any{"event": "start", "count": len(slice)}
-			startResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, "tools/stream", mcpInfo.StreamID, startContent, nil)
-			if err != nil {
-				return nil, fmt.Errorf("failed to format stream/start response: %w", err)
-			}
-			buffer.WriteString(fmt.Sprintf("event: stream/start\ndata: %s\n\n", string(startResponse)))
-
-			// 2. Send stream/data events for each item
+			// Handle standard slice streaming by sending each item as a separate event.
 			for i, item := range slice {
 				dataContent := map[string]any{"event": "data", "item": item}
 				dataResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, "tools/stream", mcpInfo.StreamID, dataContent, nil)
@@ -258,14 +248,6 @@ func Response(mcpInfo MCPInfo, responseData any, err error, tool *ToolDescriptio
 				}
 				buffer.WriteString(fmt.Sprintf("event: stream/data\ndata: %s\n\n", string(dataResponse)))
 			}
-
-			// 3. Send stream/end event
-			endContent := map[string]any{"event": "end"}
-			endResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, "tools/stream", mcpInfo.StreamID, endContent, nil)
-			if err != nil {
-				return nil, fmt.Errorf("failed to format stream/end response: %w", err)
-			}
-			buffer.WriteString(fmt.Sprintf("event: stream/end\ndata: %s\n\n", string(endResponse)))
 
 		} else if slice, ok := responseData.([]map[string]any); ok && tool.Raw {
 			// If it's a raw slice, iterate and send each element as a separate event
