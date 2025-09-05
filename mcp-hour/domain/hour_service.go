@@ -17,3 +17,7 @@ func NewHourService(clock ClockPort) *HourService {
 func (s *HourService) GetHourInfo() (int, string, string, error) {
 	return s.clock.GetCurrentHour()
 }
+
+func (s *HourService) GetDayOfWeek() string {
+	return s.clock.GetDayOfWeek()
+}

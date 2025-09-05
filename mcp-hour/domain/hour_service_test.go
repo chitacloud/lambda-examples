@@ -17,6 +17,10 @@ func (m *MockClock) GetCurrentHour() (int, string, string, error) {
 	return m.Hour, m.AmPm, m.CurrentTime, nil
 }
 
+func (m *MockClock) GetDayOfWeek() string {
+	return "Monday"
+}
+
 func TestHourService(t *testing.T) {
 	// Create a mock clock and preset the values
 	mockClock := &MockClock{

@@ -5,4 +5,5 @@ package domain
 type ClockPort interface {
 	// GetCurrentHour returns the current hour (1-12), AM/PM indicator, and full time string
 	GetCurrentHour() (int, string, string, error)
+	GetDayOfWeek() string
 }

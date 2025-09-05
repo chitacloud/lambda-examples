@@ -15,6 +15,7 @@ type HourResponse struct {
 	AmPm        string `json:"amPm"`
 	Message     string `json:"message"`
 	CurrentTime string `json:"currentTime"`
+	DayOfWeek   string `json:"dayOfWeek"`
 	Error       string `json:"error"`
 }
 
@@ -24,6 +25,7 @@ func (hr HourResponse) ToMap() map[string]any {
 		"amPm":        hr.AmPm,
 		"message":     hr.Message,
 		"currentTime": hr.CurrentTime,
+		"dayOfWeek":   hr.DayOfWeek,
 		"error":       hr.Error,
 	}
 }
@@ -45,8 +47,6 @@ func init() {
 		Version:     "1.0.0",
 		Description: "MCP server that provides current timezone",
 	})
-
-	registerGetHourTool(server)
 
 	registerGetTimeTool(server)
 

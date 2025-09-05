@@ -21,14 +21,9 @@ func (c *SystemClock) GetCurrentHour() (int, string, string, error) {
 
 	fmt.Printf("Using timezone: %s\n", c.timezone)
 
-	if c.timezone != "" {
-		location, err := time.LoadLocation(c.timezone)
-		if err != nil {
-			return 0, "", "", fmt.Errorf("failed to load location for tz=%s: %w", c.timezone, err)
-		}
-		now = now.In(location)
-	} else {
-		now = now.UTC()
+	now, i, s, s1, err := c.getTimeNow(now)
+	if err != nil {
+		return i, s, s1, err
 	}
 
 	// Format the full time string
@@ -55,4 +50,23 @@ func (c *SystemClock) GetCurrentHour() (int, string, string, error) {
 	}
 
 	return hour12, amPm, currentTime, nil
+}
+
+func (c *SystemClock) getTimeNow(now time.Time) (time.Time, int, string, string, error) {
+	if c.timezone != "" {
+		location, err := time.LoadLocation(c.timezone)
+		if err != nil {
+			return time.Time{}, 0, "", "", fmt.Errorf("failed to load location for tz=%s: %w", c.timezone, err)
+		}
+		now = now.In(location)
+	} else {
+		now = now.UTC()
+	}
+	return now, 0, "", "", nil
+}
+
+func (c *SystemClock) GetDayOfWeek() string {
+
+	now, _, _, _, _ := c.getTimeNow(time.Now())
+	return now.Weekday().String()
 }

@@ -27,7 +27,9 @@ func getHourInfo(timezone string) (HourResponse, error) {
 		inTimeZoneDescription = fmt.Sprintf(" in %s", timezone)
 	}
 
-	message := fmt.Sprintf("Current timestamp%s is %s", inTimeZoneDescription, currentTime)
+	dayOfWeek := hourService.GetDayOfWeek()
+
+	message := fmt.Sprintf("Current timestamp%s is %s. Today is %s.", inTimeZoneDescription, currentTime, dayOfWeek)
 
 	// currentTime is already formatted as ISO8601 from the adapter
 
@@ -37,44 +39,8 @@ func getHourInfo(timezone string) (HourResponse, error) {
 		AmPm:        amPm,
 		Message:     message,
 		CurrentTime: currentTime,
+		DayOfWeek:   dayOfWeek,
 	}, nil
-}
-
-func registerGetHourTool(server *mcp.Server) {
-	server.RegisterTool(mcp.ToolDescription{
-		Name:        "get_hour",
-		Description: "Get the current timestamp in UTC",
-		InputSchema: mcp.Schema{
-			Type:       "object",
-			Properties: map[string]any{},
-			Required:   []string{},
-		},
-		OutputSchema: mcp.Schema{
-			Type: "object",
-			Properties: map[string]any{
-				"hour": map[string]any{
-					"type":        "integer",
-					"description": "Current hour in 12-hour format",
-				},
-				"amPm": map[string]any{
-					"type":        "string",
-					"description": "AM or PM indicator",
-				},
-				"message": map[string]any{
-					"type":        "string",
-					"description": "Message containing the current hour and AM/PM indicator",
-				},
-				"currentTime": map[string]any{
-					"type":        "string",
-					"description": "Current time in ISO format",
-				},
-			},
-			Required: []string{"hour", "amPm", "message", "currentTime"},
-		},
-		Handler: func(r *http.Request, params map[string]any) (map[string]any, error) {
-			return getFormattedHourInfo(params)
-		},
-	})
 }
 
 func registerGetTimeTool(server *mcp.Server) {
@@ -106,12 +72,16 @@ func registerGetTimeTool(server *mcp.Server) {
 					"type":        "string",
 					"description": "Message containing the current hour and AM/PM indicator",
 				},
+				"dayOfWeek": map[string]any{
+					"type":        "string",
+					"description": "Day of the week",
+				},
 				"currentTime": map[string]any{
 					"type":        "string",
 					"description": "Current time in ISO format",
 				},
 			},
-			Required: []string{"hour", "amPm", "message", "currentTime"},
+			Required: []string{"hour", "amPm", "message", "currentTime", "dayOfWeek"},
 		},
 		Handler: func(r *http.Request, params map[string]any) (map[string]any, error) {
 			return getFormattedHourInfo(params)
