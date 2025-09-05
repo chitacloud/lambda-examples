@@ -1,7 +1,9 @@
 // Package mcp provides utilities for creating Model Context Protocol (MCP) servers
 package mcp
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 const (
 	ErrUnkown = -32001
@@ -56,13 +58,7 @@ func FormatMCPServerResponse(id int, method string, streamId string, content any
 		if err != nil {
 			responseObj["error"] = JsonRPCError{Code: ErrUnkown, Message: err.Error(), Data: map[string]any{"content": content}}
 		} else {
-			if streamId != "" {
-			result := content.(map[string]any)
-			result["streamId"] = streamId
-			responseObj["result"] = result
-		} else {
 			responseObj["result"] = content
-		}
 		}
 	}
 

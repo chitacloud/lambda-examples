@@ -20,6 +20,7 @@ func exampleSliceHandler(r *http.Request, params map[string]any) (any, error) {
 func registerExampleSliceTool(server *mcp.Server) {
 	server.RegisterTool(mcp.ToolDescription{
 		Name:        "example_slice",
+		Raw:         true,
 		Description: "An example tool that returns a slice of items to demonstrate streaming.",
 		InputSchema: &openapi3.Schema{
 			Type: &openapi3.Types{openapi3.TypeObject},

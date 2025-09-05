@@ -1,7 +1,0 @@
-mode: atomic
-example-lambdas/mcp-hour/adapters/system_clock.go:11.36,13.2 1 1
-example-lambdas/mcp-hour/adapters/system_clock.go:16.62,27.17 5 1
-example-lambdas/mcp-hour/adapters/system_clock.go:27.17,29.3 1 0
-example-lambdas/mcp-hour/adapters/system_clock.go:32.2,33.18 2 1
-example-lambdas/mcp-hour/adapters/system_clock.go:33.18,35.3 1 0
-example-lambdas/mcp-hour/adapters/system_clock.go:37.2,37.34 1 1

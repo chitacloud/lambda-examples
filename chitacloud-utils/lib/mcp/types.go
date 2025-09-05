@@ -30,6 +30,7 @@ type ToolDescription struct {
 	Description  string           `json:"description"`
 	InputSchema  *openapi3.Schema `json:"inputSchema"`
 	OutputSchema *openapi3.Schema `json:"outputSchema"`
+	Raw          bool             `json:"raw,omitempty"`
 
 	Handler func(r *http.Request, params map[string]any) (any, error) `json:"-"`
 }

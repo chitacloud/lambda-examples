@@ -66,6 +66,7 @@ func (s *Server) Handle(r *http.Request, w http.ResponseWriter, req MCPRequest) 
 
 	// Prepare the response based on path
 	var responseData any
+	var tool *ToolDescription
 
 	// Handle different MCP protocol paths
 	switch mcpInfo.Method {
@@ -86,37 +87,11 @@ func (s *Server) Handle(r *http.Request, w http.ResponseWriter, req MCPRequest) 
 	case "tools/call":
 		toolName := req.Params.Name
 
-		if tool := s.FindTool(toolName); tool != nil {
+		if tool = s.FindTool(toolName); tool != nil {
 			responseData, err = tool.Handler(r, req.Params.Arguments)
 			if err != nil {
 				fmt.Printf("Error calling tool %s: %s\n", toolName, err.Error())
-			} else {
-				// If the response is a slice, we must reformat every entry.
-				val := reflect.ValueOf(responseData)
-				if val.Kind() == reflect.Slice {
-
-					var newEntries []map[string]any
-
-					for i := 0; i < val.Len(); i++ {
-						entry := val.Index(i).Interface()
-
-						wrappedEntry, err1 := wrapToValidToolCallResponse(entry)
-						if err1 != nil {
-							return nil, err1
-						}
-						newEntries = append(newEntries, wrappedEntry)
-					}
-
-					responseData = newEntries
-
-				} else {
-					responseData, err = wrapToValidToolCallResponse(responseData)
-					if err != nil {
-						return nil, err
-					}
-				}
-			}
-		} else {
+			}		} else {
 			fmt.Printf("Tool %s not found\n", toolName)
 			err = errors.New("tool not found")
 		}
@@ -133,7 +108,7 @@ func (s *Server) Handle(r *http.Request, w http.ResponseWriter, req MCPRequest) 
 		}
 	}
 
-	return Response(mcpInfo, responseData, err)
+	return Response(mcpInfo, responseData, err, tool)
 }
 
 func wrapToValidToolCallResponse(entry any) (map[string]any, error) {
@@ -177,7 +152,7 @@ func SetSSEHeaders(w http.ResponseWriter) {
 // HandleInitialize creates the initialize response data
 func (s *Server) HandleInitialize() map[string]any {
 	return map[string]any{
-		"protocolVersion": "2024-11-05",
+		"protocolVersion": "2025-03-26",
 		"capabilities": map[string]any{
 			"tools": map[string]any{
 				"listChanged": true,
@@ -249,7 +224,7 @@ func InitHttp(r *http.Request, w http.ResponseWriter, req MCPRequest) (MCPInfo, 
 
 }
 
-func Response(mcpInfo MCPInfo, responseData any, err error) (io.ReadCloser, error) {
+func Response(mcpInfo MCPInfo, responseData any, err error, tool *ToolDescription) (io.ReadCloser, error) {
 	// Use reflection to check if responseData is a slice
 	val := reflect.ValueOf(responseData)
 
@@ -263,33 +238,56 @@ func Response(mcpInfo MCPInfo, responseData any, err error) (io.ReadCloser, erro
 			mcpInfo.StreamID = uuid.New().String()
 		}
 
-		// First, emit a {"count": x}
-		count := val.Len()
-		countEntry, err := wrapToValidToolCallResponse(map[string]any{"count": count})
-		if err != nil {
-			return nil, err
-		}
+		if slice, ok := responseData.([]map[string]any); ok && !tool.Raw {
+			// Handle standard slice streaming with stream/start, stream/data, and stream/end
 
-		countBytes, err := FormatMCPServerResponse(mcpInfo.RequestID, "tools/call", mcpInfo.StreamID, countEntry, nil)
-		if err != nil {
-			return nil, err
-		}
-
-		buffer.WriteString(fmt.Sprintf("data: %s\n\n", string(countBytes)))
-
-		// If it's a slice, iterate and send each element as a separate event
-		for i := 0; i < val.Len(); i++ {
-			elem := val.Index(i).Interface()
-
-			responseBody, err := FormatMCPServerResponse(mcpInfo.RequestID, "tools/stream", mcpInfo.StreamID, elem, err)
+			// 1. Send stream/start event
+			startContent := map[string]any{"event": "start", "count": len(slice)}
+			startResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, "tools/stream", mcpInfo.StreamID, startContent, nil)
 			if err != nil {
-				// If an error occurs formatting one element, we can decide how to handle it.
-				// For now, we'll return the error, stopping the stream.
-				return nil, fmt.Errorf("failed to marshal response for slice element %d: %w", i, err)
+				return nil, fmt.Errorf("failed to format stream/start response: %w", err)
+			}
+			buffer.WriteString(fmt.Sprintf("event: stream/start\ndata: %s\n\n", string(startResponse)))
+
+			// 2. Send stream/data events for each item
+			for i, item := range slice {
+				dataContent := map[string]any{"event": "data", "item": item}
+				dataResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, "tools/stream", mcpInfo.StreamID, dataContent, nil)
+				if err != nil {
+					return nil, fmt.Errorf("failed to format stream/data for element %d: %w", i, err)
+				}
+				buffer.WriteString(fmt.Sprintf("event: stream/data\ndata: %s\n\n", string(dataResponse)))
 			}
 
-			// Add data for the current element
-			buffer.WriteString(fmt.Sprintf("data: %s\n\n", string(responseBody)))
+			// 3. Send stream/end event
+			endContent := map[string]any{"event": "end"}
+			endResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, "tools/stream", mcpInfo.StreamID, endContent, nil)
+			if err != nil {
+				return nil, fmt.Errorf("failed to format stream/end response: %w", err)
+			}
+			buffer.WriteString(fmt.Sprintf("event: stream/end\ndata: %s\n\n", string(endResponse)))
+
+		} else if slice, ok := responseData.([]map[string]any); ok && tool.Raw {
+			// If it's a raw slice, iterate and send each element as a separate event
+			for i, elem := range slice {
+				// Marshal the element to JSON for the data field
+				elemBytes, err := json.Marshal(elem)
+				if err != nil {
+					return nil, fmt.Errorf("failed to marshal response for raw slice element %d: %w", i, err)
+				}
+
+				// Safely extract event name from the element, default to "message"
+				var eventName string
+				if name, ok := elem["name"].(string); ok {
+					eventName = name
+				} else {
+					eventName = "message"
+				}
+
+				// Add event name and data
+				buffer.WriteString(fmt.Sprintf("event: %s\n", eventName))
+				buffer.WriteString(fmt.Sprintf("data: %s\n\n", string(elemBytes)))
+			}
 		}
 	} else {
 		// If it's not a slice, handle as a single response

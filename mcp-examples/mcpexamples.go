@@ -19,6 +19,7 @@ func init() {
 	})
 
 	registerExampleSliceTool(server)
+	registerStandardSliceTool(server)
 }
 
 func ExamplesHandler(r *http.Request, w http.ResponseWriter, req mcp.MCPRequest) (io.ReadCloser, error) {
