@@ -175,15 +175,15 @@ func SetSSEHeaders(w http.ResponseWriter) {
 }
 
 // HandleInitialize creates the initialize response data
-func (s *Server) HandleInitialize() map[string]interface{} {
-	return map[string]interface{}{
+func (s *Server) HandleInitialize() map[string]any {
+	return map[string]any{
 		"protocolVersion": "2024-11-05",
-		"capabilities": map[string]interface{}{
-			"tools": map[string]interface{}{
+		"capabilities": map[string]any{
+			"tools": map[string]any{
 				"listChanged": true,
 			},
 		},
-		"serverInfo": map[string]interface{}{
+		"serverInfo": map[string]any{
 			"name":        s.Name,
 			"version":     s.Version,
 			"description": s.Description,
