@@ -275,8 +275,6 @@ func Response(mcpInfo MCPInfo, responseData any, err error) (io.ReadCloser, erro
 			return nil, err
 		}
 
-		// Add event name and data
-		buffer.WriteString(fmt.Sprintf("event: %s\n", "tools/call"))
 		buffer.WriteString(fmt.Sprintf("data: %s\n\n", string(countBytes)))
 
 		// If it's a slice, iterate and send each element as a separate event
