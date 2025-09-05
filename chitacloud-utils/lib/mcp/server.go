@@ -288,8 +288,7 @@ func Response(mcpInfo MCPInfo, responseData any, err error) (io.ReadCloser, erro
 				return nil, fmt.Errorf("failed to marshal response for slice element %d: %w", i, err)
 			}
 
-			// Add event name and data for the current element
-			buffer.WriteString(fmt.Sprintf("event: %s\n", "tools/stream"))
+			// Add data for the current element
 			buffer.WriteString(fmt.Sprintf("data: %s\n\n", string(responseBody)))
 		}
 	} else {
