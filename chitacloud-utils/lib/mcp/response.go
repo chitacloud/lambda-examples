@@ -45,9 +45,9 @@ type JsonRPCError struct {
 }
 
 type ProgressInfo struct {
-	ProgressToken string `json:"progressToken"`
-	Progress      int    `json:"progress"`
-	Total         int    `json:"total"`
+	ProgressToken any `json:"progressToken"`
+	Progress      int `json:"progress"`
+	Total         int `json:"total"`
 }
 
 // FormatMCPServerResponse formats the response according to JSON-RPC 2.0 / MCP protocol

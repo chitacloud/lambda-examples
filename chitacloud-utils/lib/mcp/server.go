@@ -226,12 +226,7 @@ func InitHttp(r *http.Request, w http.ResponseWriter, req MCPRequest) (MCPInfo, 
 }
 
 func Response(mcpInfo MCPInfo, responseData any, err error, tool *ToolDescription, params MCPRequestParams) (io.ReadCloser, error) {
-	var progressToken string
-	if params.Meta != nil && params.Meta["progressToken"] != nil {
-		if v, ok := params.Meta["progressToken"].(string); ok {
-			progressToken = v
-		}
-	}
+	progressToken := params.Meta["progressToken"]
 
 	// Use reflection to check if responseData is a slice
 	val := reflect.ValueOf(responseData)
