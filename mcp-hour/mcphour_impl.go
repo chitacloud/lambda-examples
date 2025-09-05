@@ -29,7 +29,7 @@ func getHourInfo(timezone string) (HourResponse, error) {
 
 	dayOfWeek := hourService.GetDayOfWeek()
 
-	message := fmt.Sprintf("Current timestamp%s is %s. Today is %s.", inTimeZoneDescription, currentTime, dayOfWeek)
+	message := fmt.Sprintf("Current hour is %d %s%s. Today is %s.", hour, amPm, inTimeZoneDescription, dayOfWeek)
 
 	// currentTime is already formatted as ISO8601 from the adapter
 

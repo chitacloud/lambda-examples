@@ -36,23 +36,16 @@ func parseSSEEvent(dataLine string) (HourResponse, error) {
 	// SSE data lines are prefixed with "data: "
 	dataLine = strings.TrimPrefix(dataLine, "data: ")
 
-	// Try parsing JSON-RPC 2.0 response format where hour data is in 'result.structuredContent' field
+	// Try parsing JSON-RPC 2.0 response format where hour data is in 'result' field
 	var jsonRpcResp struct {
-		JsonRPC string `json:"jsonrpc"`
-		ID      int    `json:"id"`
-		Result  struct {
-			StructuredContent string `json:"structuredContent"`
-		} `json:"result"`
+		JsonRPC string       `json:"jsonrpc"`
+		ID      int          `json:"id"`
+		Result  HourResponse `json:"result"`
 	}
 
 	err := json.Unmarshal([]byte(dataLine), &jsonRpcResp)
-	if err == nil && jsonRpcResp.Result.StructuredContent != "" {
-		var hourResp HourResponse
-		err := json.Unmarshal([]byte(jsonRpcResp.Result.StructuredContent), &hourResp)
-		if err != nil {
-			return HourResponse{}, fmt.Errorf("failed to unmarshal structuredContent: %w", err)
-		}
-		return hourResp, nil
+	if err == nil && (jsonRpcResp.Result.Hour > 0 || jsonRpcResp.Result.AmPm != "") {
+		return jsonRpcResp.Result, nil
 	}
 
 	// Try direct format (for backward compatibility)
