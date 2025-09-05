@@ -242,7 +242,11 @@ func Response(mcpInfo MCPInfo, responseData any, err error, tool *ToolDescriptio
 		if slice, ok := responseData.([]map[string]any); ok && !tool.Raw {
 			// Handle standard slice streaming by sending each item as a separate event.
 			for i, item := range slice {
-				dataResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, "tools/stream", mcpInfo.StreamID, item, nil)
+				wrappedItem, err := wrapToValidToolCallResponse(item)
+				if err != nil {
+					return nil, fmt.Errorf("failed to wrap stream item for element %d: %w", i, err)
+				}
+				dataResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, "tools/stream", mcpInfo.StreamID, wrappedItem["content"], nil)
 				if err != nil {
 					return nil, fmt.Errorf("failed to format stream/data for element %d: %w", i, err)
 				}
@@ -250,7 +254,11 @@ func Response(mcpInfo MCPInfo, responseData any, err error, tool *ToolDescriptio
 			}
 
 			// After streaming, send a final response to the original tools/call request
-			finalResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, mcpInfo.Method, mcpInfo.StreamID, map[string]string{"status": "stream_completed"}, nil)
+			finalMessage, err := wrapToValidToolCallResponse(map[string]string{})
+			if err != nil {
+				return nil, fmt.Errorf("failed to wrap final stream item: %w", err)
+			}
+			finalResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, mcpInfo.Method, mcpInfo.StreamID, finalMessage, nil)
 			if err != nil {
 				return nil, fmt.Errorf("failed to format final stream response: %w", err)
 			}
