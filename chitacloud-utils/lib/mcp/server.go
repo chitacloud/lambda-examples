@@ -281,7 +281,7 @@ func Response(mcpInfo MCPInfo, responseData any, err error) (io.ReadCloser, erro
 
 		buffer.WriteString("data: ")
 		buffer.Write(countBytes)
-		buffer.WriteString("\n\n")
+		buffer.WriteString("\n")
 
 		// If it's a slice, iterate and send each element as a separate event
 		for i := 0; i < val.Len(); i++ {
@@ -297,8 +297,11 @@ func Response(mcpInfo MCPInfo, responseData any, err error) (io.ReadCloser, erro
 			// Add data for the current element
 			buffer.WriteString("data: ")
 			buffer.Write(responseBody)
-			buffer.WriteString("\n\n")
+			buffer.WriteString("\n")
 		}
+
+		buffer.WriteString("\n")
+
 	} else {
 		// If it's not a slice, handle as a single response
 		responseBody, err := FormatMCPServerResponse(mcpInfo.RequestID, mcpInfo.Method, responseData, err)
