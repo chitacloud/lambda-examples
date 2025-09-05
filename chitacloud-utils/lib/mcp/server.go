@@ -241,70 +241,34 @@ func Response(mcpInfo MCPInfo, responseData any, err error, tool *ToolDescriptio
 			mcpInfo.StreamID = uuid.New().String()
 		}
 
-		if slice, ok := responseData.([]map[string]any); ok && !tool.Raw {
-			// Handle standard slice streaming by sending each item as a separate event.
-			var allItems []map[string]any
-			for i, item := range slice {
-				allItems = append(allItems, item)
+		sliceLen := val.Len()
+		var allItems []any
+		for i := range sliceLen {
+			item := val.Index(i).Interface()
+			allItems = append(allItems, item)
 
-				dataResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, "notifications/progress", mcpInfo.StreamID, item, &ProgressInfo{
-					ProgressToken: progressToken,
-					Progress:      i + 1,
-					Total:         len(slice),
-				}, nil)
-				if err != nil {
-					return nil, fmt.Errorf("failed to format stream/data for element %d: %w", i, err)
-				}
-				// buffer.WriteString(fmt.Sprintf("event: stream/data\ndata: %s\n\n", string(dataResponse)))
-				buffer.WriteString(fmt.Sprintf("data: %s\n\n", string(dataResponse)))
-			}
-
-			// After streaming, send a final response containing all items wrapped in a result object
-			finalResult, err := wrapToValidToolCallResponse(map[string]any{"items": allItems})
+			dataResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, "notifications/progress", mcpInfo.StreamID, item, &ProgressInfo{
+				ProgressToken: progressToken,
+				Progress:      i + 1,
+				Total:         sliceLen,
+			}, nil)
 			if err != nil {
-				return nil, fmt.Errorf("failed to wrap final stream response: %w", err)
+				return nil, fmt.Errorf("failed to format stream/data for element %d: %w", i, err)
 			}
-			finalResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, mcpInfo.Method, mcpInfo.StreamID, finalResult, nil, nil)
-			if err != nil {
-				return nil, fmt.Errorf("failed to format final stream response: %w", err)
-			}
-			buffer.WriteString(fmt.Sprintf("data: %s\n\n", string(finalResponse)))
-
-		} else if slice, ok := responseData.([]map[string]any); ok && tool.Raw {
-			// If it's a raw slice, iterate and send each element as a separate event
-			var allItems []map[string]any
-			for i, elem := range slice {
-				// Marshal the element to JSON for the data field
-				elemBytes, err := json.Marshal(elem)
-				if err != nil {
-					return nil, fmt.Errorf("failed to marshal response for raw slice element %d: %w", i, err)
-				}
-				allItems = append(allItems, elem)
-
-				// // Safely extract event name from the element, default to "message"
-				// var eventName string
-				// if name, ok := elem["name"].(string); ok {
-				// 	eventName = name
-				// } else {
-				// 	eventName = "message"
-				// }
-
-				// // Add event name and data
-				// buffer.WriteString(fmt.Sprintf("event: %s\n", eventName))
-				buffer.WriteString(fmt.Sprintf("data: %s\n\n", string(elemBytes)))
-			}
-
-			// After streaming, send a final response containing all items wrapped in a result object
-			finalResult, err := wrapToValidToolCallResponse(allItems)
-			if err != nil {
-				return nil, fmt.Errorf("failed to wrap final stream response: %w", err)
-			}
-			finalResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, mcpInfo.Method, mcpInfo.StreamID, finalResult, nil, nil)
-			if err != nil {
-				return nil, fmt.Errorf("failed to format final stream response: %w", err)
-			}
-			buffer.WriteString(fmt.Sprintf("data: %s\n\n", string(finalResponse)))
+			buffer.WriteString(fmt.Sprintf("data: %s\n\n", string(dataResponse)))
 		}
+
+		// After streaming, send a final response containing all items wrapped in a result object
+		finalResult, err := wrapToValidToolCallResponse(map[string]any{"items": allItems})
+		if err != nil {
+			return nil, fmt.Errorf("failed to wrap final stream response: %w", err)
+		}
+		finalResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, mcpInfo.Method, mcpInfo.StreamID, finalResult, nil, nil)
+		if err != nil {
+			return nil, fmt.Errorf("failed to format final stream response: %w", err)
+		}
+		buffer.WriteString(fmt.Sprintf("data: %s\n\n", string(finalResponse)))
+
 	} else {
 		// If it's not a slice, handle as a single response
 		responseBody, err := FormatMCPServerResponse(mcpInfo.RequestID, mcpInfo.Method, mcpInfo.StreamID, responseData, nil, err)
