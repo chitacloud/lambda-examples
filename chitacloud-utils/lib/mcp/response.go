@@ -52,7 +52,11 @@ func FormatMCPServerResponse(id int, method string, streamId string, content any
 
 	if method == "tools/stream" {
 		responseObj["method"] = method
-		responseObj["params"] = map[string]any{"streamId": streamId, "content": content}
+		// The client expects content to be an array of parts, even for streams.
+		responseObj["params"] = map[string]any{
+			"streamId": streamId,
+			"content":  []any{content},
+		}
 	} else {
 		responseObj["id"] = id
 		if err != nil {
