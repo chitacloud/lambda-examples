@@ -275,6 +275,7 @@ func Response(mcpInfo MCPInfo, responseData any, err error) (io.ReadCloser, erro
 			return nil, err
 		}
 
+		buffer.WriteString(fmt.Sprintf("event: %s\n", mcpInfo.Method))
 		buffer.WriteString("data: ")
 		buffer.Write(countBytes)
 		buffer.WriteString("\n\n")
@@ -290,10 +291,9 @@ func Response(mcpInfo MCPInfo, responseData any, err error) (io.ReadCloser, erro
 				return nil, fmt.Errorf("failed to marshal response for slice element %d: %w", i, err)
 			}
 
-			// Add data for the current element
-			buffer.WriteString("data: ")
-			buffer.Write(responseBody)
-			buffer.WriteString("\n\n")
+			// Add event name and data for the current element
+			buffer.WriteString(fmt.Sprintf("event: %s\n", "tools/stream"))
+			buffer.WriteString(fmt.Sprintf("data: %s\n\n", string(responseBody)))
 		}
 	} else {
 		// If it's not a slice, handle as a single response
@@ -302,10 +302,9 @@ func Response(mcpInfo MCPInfo, responseData any, err error) (io.ReadCloser, erro
 			return nil, fmt.Errorf("failed to marshal response: %w", err)
 		}
 
-		// Add data
-		buffer.WriteString("data: ")
-		buffer.Write(responseBody)
-		buffer.WriteString("\n\n")
+		// Add event name and data
+		buffer.WriteString(fmt.Sprintf("event: %s\n", mcpInfo.Method))
+		buffer.WriteString(fmt.Sprintf("data: %s\n\n", string(responseBody)))
 	}
 
 	return io.NopCloser(strings.NewReader(buffer.String())), nil
