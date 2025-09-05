@@ -253,7 +253,8 @@ func Response(mcpInfo MCPInfo, responseData any, err error, tool *ToolDescriptio
 				if err != nil {
 					return nil, fmt.Errorf("failed to format stream/data for element %d: %w", i, err)
 				}
-				buffer.WriteString(fmt.Sprintf("event: stream/data\ndata: %s\n\n", string(dataResponse)))
+				// buffer.WriteString(fmt.Sprintf("event: stream/data\ndata: %s\n\n", string(dataResponse)))
+				buffer.WriteString(fmt.Sprintf("data: %s\n\n", string(dataResponse)))
 			}
 
 			// After streaming, send a final response containing all items to the original tools/call request
@@ -274,16 +275,16 @@ func Response(mcpInfo MCPInfo, responseData any, err error, tool *ToolDescriptio
 				}
 				allItems = append(allItems, elem)
 
-				// Safely extract event name from the element, default to "message"
-				var eventName string
-				if name, ok := elem["name"].(string); ok {
-					eventName = name
-				} else {
-					eventName = "message"
-				}
+				// // Safely extract event name from the element, default to "message"
+				// var eventName string
+				// if name, ok := elem["name"].(string); ok {
+				// 	eventName = name
+				// } else {
+				// 	eventName = "message"
+				// }
 
-				// Add event name and data
-				buffer.WriteString(fmt.Sprintf("event: %s\n", eventName))
+				// // Add event name and data
+				// buffer.WriteString(fmt.Sprintf("event: %s\n", eventName))
 				buffer.WriteString(fmt.Sprintf("data: %s\n\n", string(elemBytes)))
 			}
 
