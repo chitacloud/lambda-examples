@@ -91,7 +91,7 @@ func (s *Server) Handle(r *http.Request, w http.ResponseWriter, req MCPRequest) 
 			} else {
 				// If the response is a slice, we must reformat every entry.
 				val := reflect.ValueOf(responseData)
-				if val.Kind() != reflect.Slice {
+				if val.Kind() == reflect.Slice {
 
 					var newEntries []map[string]any
 
