@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"reflect"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 // Server represents an MCP protocol server
@@ -255,6 +257,11 @@ func Response(mcpInfo MCPInfo, responseData any, err error) (io.ReadCloser, erro
 	var buffer strings.Builder
 
 	if val.Kind() == reflect.Slice {
+
+		// If no streamId, generate a new one
+		if mcpInfo.StreamID == "" {
+			mcpInfo.StreamID = uuid.New().String()
+		}
 
 		// First, emit a {"count": x}
 		count := val.Len()
