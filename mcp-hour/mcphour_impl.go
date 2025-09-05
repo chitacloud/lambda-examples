@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/chitacloud/lambda-examples/chitacloud-utils/lib/mcp"
 	"github.com/chitacloud/lambda-examples/mcp-hour/adapters"
 	"github.com/chitacloud/lambda-examples/mcp-hour/domain"
-
-	"github.com/chitacloud/lambda-examples/chitacloud-utils/lib/mcp"
+	"github.com/getkin/kin-openapi/openapi3"
 )
 
 // getHourInfo returns the current hour information using domain services
@@ -47,55 +47,51 @@ func registerGetTimeTool(server *mcp.Server) {
 	server.RegisterTool(mcp.ToolDescription{
 		Name:        "get_time",
 		Description: "Get the current timestamp in the specified timezone",
-		InputSchema: mcp.Schema{
-			Type: "object",
-			Properties: map[string]any{
-				"timezone": map[string]any{
-					"type":        "string",
-					"description": "Optional timezone (defaults to system timezone)",
+		InputSchema: &openapi3.Schema{
+			Type: &openapi3.Types{openapi3.TypeObject},
+			Properties: map[string]*openapi3.SchemaRef{
+				"timezone": {
+					Value: &openapi3.Schema{
+						Type:        &openapi3.Types{openapi3.TypeString},
+						Description: "Optional timezone (defaults to system timezone)",
+					},
 				},
 			},
-			Required: []string{},
 		},
-		OutputSchema: mcp.Schema{
-			Type: "object",
-			Properties: map[string]any{
-				"hour": map[string]any{
-					"type":        "integer",
-					"description": "Current hour in 12-hour format",
+		OutputSchema: &openapi3.Schema{
+			Type: &openapi3.Types{openapi3.TypeObject},
+			Properties: map[string]*openapi3.SchemaRef{
+				"hour": {
+					Value: &openapi3.Schema{Type: &openapi3.Types{openapi3.TypeInteger}, Description: "Current hour in 12-hour format"},
 				},
-				"amPm": map[string]any{
-					"type":        "string",
-					"description": "AM or PM indicator",
+				"amPm": {
+					Value: &openapi3.Schema{Type: &openapi3.Types{openapi3.TypeString}, Description: "AM or PM indicator"},
 				},
-				"message": map[string]any{
-					"type":        "string",
-					"description": "Message containing the current hour and AM/PM indicator",
+				"message": {
+					Value: &openapi3.Schema{Type: &openapi3.Types{openapi3.TypeString}, Description: "Message containing the current hour and AM/PM indicator"},
 				},
-				"dayOfWeek": map[string]any{
-					"type":        "string",
-					"description": "Day of the week",
+				"dayOfWeek": {
+					Value: &openapi3.Schema{Type: &openapi3.Types{openapi3.TypeString}, Description: "Day of the week"},
 				},
-				"currentTime": map[string]any{
-					"type":        "string",
-					"description": "Current time in ISO format",
+				"currentTime": {
+					Value: &openapi3.Schema{Type: &openapi3.Types{openapi3.TypeString}, Description: "Current time in ISO format"},
 				},
 			},
 			Required: []string{"hour", "amPm", "message", "currentTime", "dayOfWeek"},
 		},
-		Handler: func(r *http.Request, params map[string]any) (map[string]any, error) {
+		Handler: func(r *http.Request, params map[string]any) (any, error) {
 			return getFormattedHourInfo(params)
 		},
 	})
 }
 
 func registerDefaultHandler(server *mcp.Server) {
-	server.SetDefaultHandler(func(params map[string]any) (map[string]any, error) {
+	server.SetDefaultHandler(func(r *http.Request, params map[string]any) (any, error) {
 		return getFormattedHourInfo(params)
 	})
 }
 
-func getFormattedHourInfo(params map[string]any) (map[string]any, error) {
+func getFormattedHourInfo(params map[string]any) (any, error) {
 
 	timezone := ""
 	if tz, ok := params["timezone"]; ok {

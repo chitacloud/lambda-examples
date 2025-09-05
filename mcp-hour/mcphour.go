@@ -1,7 +1,6 @@
 package mcp_hour
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 
@@ -34,10 +33,7 @@ var server *mcp.Server
 
 // Handler is the lambda entry point for Chita Cloud
 func Handler(r *http.Request, w http.ResponseWriter, req mcp.MCPRequest) (io.ReadCloser, error) {
-	fmt.Println("MCP request:", req.JSONRPC, req.ID, req.Method)
-	fmt.Println("Request headers:", r.Header)
-
-	return server.Handle(w, r, req)
+	return server.Handle(r, w, req)
 }
 
 func init() {
@@ -46,6 +42,7 @@ func init() {
 		Name:        "HourMCP",
 		Version:     "1.0.0",
 		Description: "MCP server that provides current timezone",
+		Debug:       true,
 	})
 
 	registerGetTimeTool(server)

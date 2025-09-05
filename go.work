@@ -10,4 +10,5 @@ use (
 	./lambda-with-env
 	./mcp-hour
 	./send-expo-push
+	./mcp-examples
 )

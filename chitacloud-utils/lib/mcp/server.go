@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"reflect"
 	"strings"
 )
 
@@ -16,7 +17,8 @@ type Server struct {
 	Version        string
 	Description    string
 	Tools          []ToolDescription
-	DefaultHandler func(params map[string]any) (map[string]any, error)
+	DefaultHandler func(r *http.Request, params map[string]any) (any, error)
+	Debug          bool
 }
 
 // NewServer creates a new MCP server with the given parameters
@@ -26,7 +28,12 @@ func NewServer(name, version, description string) *Server {
 		Version:     version,
 		Description: description,
 		Tools:       []ToolDescription{},
+		Debug:       false,
 	}
+}
+
+func (s *Server) SetDebug(debug bool) {
+	s.Debug = debug
 }
 
 // RegisterTool adds a tool to the server's available tools
@@ -34,11 +41,19 @@ func (s *Server) RegisterTool(tool ToolDescription) {
 	s.Tools = append(s.Tools, tool)
 }
 
-func (s *Server) SetDefaultHandler(handler func(params map[string]any) (map[string]any, error)) {
+func (s *Server) SetDefaultHandler(handler func(r *http.Request, params map[string]any) (any, error)) {
 	s.DefaultHandler = handler
 }
 
-func (s *Server) Handle(w http.ResponseWriter, r *http.Request, req MCPRequest) (io.ReadCloser, error) {
+func (s *Server) Handle(r *http.Request, w http.ResponseWriter, req MCPRequest) (io.ReadCloser, error) {
+
+	if s.Debug {
+		fmt.Println("MCP request:", req.JSONRPC, req.ID, req.Method)
+		fmt.Println("Request headers:", r.Header)
+		// DEBUG, print body
+		fmt.Println("[DEBUG] Request body:", string(req.LambdaRequest.Payload))
+
+	}
 
 	mcpInfo, err := InitHttp(r, w, req)
 	if err != nil {
@@ -47,23 +62,24 @@ func (s *Server) Handle(w http.ResponseWriter, r *http.Request, req MCPRequest) 
 		return nil, nil
 	}
 
-	// DEBUG, print body
-	fmt.Println("[DEBUG] Request body:", string(req.LambdaRequest.Payload))
-
 	// Prepare the response based on path
-	var responseData map[string]any
+	var responseData any
 
 	// Handle different MCP protocol paths
 	switch mcpInfo.Method {
 	case "initialize":
 		// Initialize request - return server capabilities
 		responseData = s.HandleInitialize()
-		fmt.Println("Sending initialize response")
+		if s.Debug {
+			fmt.Println("Sending initialize response")
+		}
 
 	case "tools/list":
 		// List tools request
 		responseData = s.HandleTools()
-		fmt.Println("Sending tools list response")
+		if s.Debug {
+			fmt.Println("Sending tools list response")
+		}
 
 	case "tools/call":
 		toolName := req.Params.Name
@@ -73,24 +89,26 @@ func (s *Server) Handle(w http.ResponseWriter, r *http.Request, req MCPRequest) 
 			if err != nil {
 				fmt.Printf("Error calling tool %s: %s\n", toolName, err.Error())
 			} else {
+				// If the response is a slice, we don't need to wrap it.
+				// The Response function will handle streaming it.
+				val := reflect.ValueOf(responseData)
+				if val.Kind() != reflect.Slice {
+					// According to JSON-RPC 2.0, we should use 'result' to contain the response content
+					unstructuredBytes, err := json.Marshal(responseData)
+					if err != nil {
+						return nil, err
+					}
 
-				// According to JSON-RPC 2.0, we should use 'result' to contain the response content
-
-				unstructuredBytes, err := json.Marshal(responseData)
-				if err != nil {
-					return nil, err
-				}
-
-				responseData = map[string]any{
-					"content": []map[string]any{
-						{
-							"type": "text",
-							"text": string(unstructuredBytes),
+					responseData = map[string]any{
+						"content": []map[string]any{
+							{
+								"type": "text",
+								"text": string(unstructuredBytes),
+							},
 						},
-					},
-					"structuredContent": responseData,
+						"structuredContent": responseData,
+					}
 				}
-
 			}
 		} else {
 			fmt.Printf("Tool %s not found\n", toolName)
@@ -101,9 +119,12 @@ func (s *Server) Handle(w http.ResponseWriter, r *http.Request, req MCPRequest) 
 			fmt.Printf("[DEBUG] Default handler not set\n")
 			responseData = map[string]any{"status": "OK"}
 		} else {
-			responseData, err = s.DefaultHandler(req.Params.Arguments)
+			responseData, err = s.DefaultHandler(r, req.Params.Arguments)
 		}
-		fmt.Println("Sending default path response")
+
+		if s.Debug {
+			fmt.Println("Sending default path response")
+		}
 	}
 
 	return Response(mcpInfo, responseData, err)
@@ -207,21 +228,43 @@ func InitHttp(r *http.Request, w http.ResponseWriter, req MCPRequest) (MCPInfo, 
 }
 
 func Response(mcpInfo MCPInfo, responseData any, err error) (io.ReadCloser, error) {
+	// Use reflection to check if responseData is a slice
+	val := reflect.ValueOf(responseData)
 
 	// Format as SSE
 	var buffer strings.Builder
 
-	// Format as JSON-RPC 2.0 response for MCP
-	responseBody, err := FormatMCPServerResponse(mcpInfo.RequestID, mcpInfo.Method, responseData, err)
+	if val.Kind() == reflect.Slice {
+		// If it's a slice, iterate and send each element as a separate event
+		for i := 0; i < val.Len(); i++ {
+			elem := val.Index(i).Interface()
+			// Per instructions, wrap each element in a single-element slice
+			singleElementSlice := []any{elem}
 
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal response: %w", err)
+			responseBody, err := FormatMCPServerResponse(mcpInfo.RequestID, mcpInfo.Method, singleElementSlice, err)
+			if err != nil {
+				// If an error occurs formatting one element, we can decide how to handle it.
+				// For now, we'll return the error, stopping the stream.
+				return nil, fmt.Errorf("failed to marshal response for slice element %d: %w", i, err)
+			}
+
+			// Add data for the current element
+			buffer.WriteString("data: ")
+			buffer.Write(responseBody)
+			buffer.WriteString("\n\n")
+		}
+	} else {
+		// If it's not a slice, handle as a single response
+		responseBody, err := FormatMCPServerResponse(mcpInfo.RequestID, mcpInfo.Method, responseData, err)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal response: %w", err)
+		}
+
+		// Add data
+		buffer.WriteString("data: ")
+		buffer.Write(responseBody)
+		buffer.WriteString("\n\n")
 	}
-
-	// Add data
-	buffer.WriteString("data: ")
-	buffer.Write(responseBody)
-	buffer.WriteString("\n\n")
 
 	return io.NopCloser(strings.NewReader(buffer.String())), nil
 }

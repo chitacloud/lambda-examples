@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/fredyk/westack-go/v2/lambdas"
+	"github.com/getkin/kin-openapi/openapi3"
 )
 
 type MCPRequestParams struct {
@@ -24,20 +25,10 @@ type MCPRequest struct {
 
 // ToolDescription represents an MCP tool description
 type ToolDescription struct {
-	Name         string `json:"name"`
-	Description  string `json:"description"`
-	InputSchema  Schema `json:"inputSchema"`
-	OutputSchema Schema `json:"outputSchema"`
+	Name         string           `json:"name"`
+	Description  string           `json:"description"`
+	InputSchema  *openapi3.Schema `json:"inputSchema"`
+	OutputSchema *openapi3.Schema `json:"outputSchema"`
 
-	Handler func(r *http.Request, params map[string]any) (map[string]any, error) `json:"-"`
-}
-
-// Schema describes the parameters for a tool
-type Schema struct {
-	Type                 string         `json:"type"`
-	Properties           map[string]any `json:"properties,omitempty"`
-	AdditionalProperties bool           `json:"additionalProperties,omitempty"`
-	// for arrays:
-	Items    *Schema  `json:"items,omitempty"`
-	Required []string `json:"required,omitempty"`
+	Handler func(r *http.Request, params map[string]any) (any, error) `json:"-"`
 }

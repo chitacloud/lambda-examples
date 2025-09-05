@@ -10,11 +10,13 @@ type ServerOptions struct {
 	Name        string
 	Version     string
 	Description string
+	Debug       bool
 }
 
 // CreateMCPServer initializes and configures an MCP server for our hour service
 func CreateMCPServer(options ServerOptions) *mcp.Server {
 	server := mcp.NewServer(options.Name, options.Version, options.Description)
+	server.SetDebug(options.Debug)
 	return server
 }
 
