@@ -250,13 +250,9 @@ func Response(mcpInfo MCPInfo, responseData any, err error, tool *ToolDescriptio
 			// Handle standard slice streaming by sending each item as a separate event.
 			var allItems []map[string]any
 			for i, item := range slice {
-				wrappedItem, err := wrapToValidToolCallResponse(item)
-				if err != nil {
-					return nil, fmt.Errorf("failed to wrap stream item for element %d: %w", i, err)
-				}
-				allItems = append(allItems, wrappedItem)
+				allItems = append(allItems, item)
 
-				dataResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, "notifications/progress", mcpInfo.StreamID, wrappedItem["content"], &ProgressInfo{
+				dataResponse, err := FormatMCPServerResponse(mcpInfo.RequestID, "notifications/progress", mcpInfo.StreamID, item, &ProgressInfo{
 					ProgressToken: progressToken,
 					Progress:      i + 1,
 					Total:         len(slice),
