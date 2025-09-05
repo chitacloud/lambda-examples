@@ -256,7 +256,7 @@ func Response(mcpInfo MCPInfo, responseData any, err error) (io.ReadCloser, erro
 	// Format as SSE
 	var buffer strings.Builder
 
-	if val.Kind() == reflect.Slice {
+	if val.Kind() == reflect.Slice && mcpInfo.Method == "tools/call" {
 
 		// If no streamId, generate a new one
 		if mcpInfo.StreamID == "" {
