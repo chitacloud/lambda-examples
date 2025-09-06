@@ -4,7 +4,7 @@ package mcp
 import (
 	"net/http"
 
-	"github.com/fredyk/westack-go/v2/lambdas"
+	"github.com/fredyk/westack-go/lambdas"
 	"github.com/getkin/kin-openapi/openapi3"
 )
 
