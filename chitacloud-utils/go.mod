@@ -8,7 +8,7 @@ require (
 )
 
 require (
-	github.com/fredyk/westack-go/v2/lambdas v0.0.0-20250904092258-4f6557da7f99
+	github.com/fredyk/westack-go/lambdas v1.0.0-rc01
 	github.com/google/uuid v1.6.0
 )
 

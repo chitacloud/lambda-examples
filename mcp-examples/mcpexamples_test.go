@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/chitacloud/lambda-examples/chitacloud-utils/lib/mcp"
-	"github.com/fredyk/westack-go/v2/lambdas"
+	"github.com/fredyk/westack-go/lambdas"
 	"github.com/stretchr/testify/assert"
 )
 

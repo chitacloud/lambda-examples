@@ -1,7 +1,7 @@
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/fredyk/westack-go/v2/lambdas v0.0.0-20250904092258-4f6557da7f99 h1:FXJ6NTsTZTQnH7uOuzY49c9SjI6oba3kQ+M567xEre4=
-github.com/fredyk/westack-go/v2/lambdas v0.0.0-20250904092258-4f6557da7f99/go.mod h1:fhCqS94tYYxFHm08YBJMF6VapbKXI5RxDr1n4Mlzcd4=
+github.com/fredyk/westack-go/lambdas v1.0.0-rc01 h1:d8epjKWu8HWqN3+3R55Sgph/JoR5ZPImWymMVpTEfdE=
+github.com/fredyk/westack-go/lambdas v1.0.0-rc01/go.mod h1:F9ManVwr6PLYOv7UaykVbidPipOVJi8VBwWuPkq2s5k=
 github.com/getkin/kin-openapi v0.125.0 h1:jyQCyf2qXS1qvs2U00xQzkGCqYPhEhZDmSmVt65fXno=
 github.com/getkin/kin-openapi v0.125.0/go.mod h1:wb1aSZA/iWmorQP9KTAS/phLj/t17B5jT7+fS8ed9NM=
 github.com/go-openapi/jsonpointer v0.20.2 h1:mQc3nmndL8ZBzStEo3JYF8wzmeWffDH4VbXz58sAx6Q=
