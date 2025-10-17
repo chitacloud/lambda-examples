@@ -1,8 +1,6 @@
 module lambda-with-env
 
-go 1.22.9
-
-toolchain go1.23.0
+go 1.24.2
 
 require github.com/fredyk/westack-go v1.8.9-0.20250125110626-14c9227b4124
 
