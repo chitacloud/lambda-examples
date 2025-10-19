@@ -1,6 +1,9 @@
 package logger
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type LogRequest struct {
 	Level     string `json:"l"`
@@ -11,6 +14,7 @@ type LogRequest struct {
 }
 
 func Log(request LogRequest) {
+	escapedMsg := strings.ReplaceAll(request.Message, "\"", "\\\"")
 	fmt.Printf("t=%s level=%s service=%s rid=%s msg=\"%s\"\n", 
-		request.Timestamp, request.Level, request.Service, request.RequestID, request.Message)
+		request.Timestamp, request.Level, request.Service, request.RequestID, escapedMsg)
 }
