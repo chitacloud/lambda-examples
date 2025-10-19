@@ -1,4 +1,4 @@
-package logger
+package main
 
 import (
 	"fmt"
@@ -15,6 +15,6 @@ type LogRequest struct {
 
 func Log(request LogRequest) {
 	escapedMsg := strings.ReplaceAll(request.Message, "\"", "\\\"")
-	fmt.Printf("t=%s level=%s service=%s rid=%s msg=\"%s\"\n", 
+	fmt.Printf("t=%s level=%s service=%s rid=%s msg=\"%s\"\n",
 		request.Timestamp, request.Level, request.Service, request.RequestID, escapedMsg)
 }
